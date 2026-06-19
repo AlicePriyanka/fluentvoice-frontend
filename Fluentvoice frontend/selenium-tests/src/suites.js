@@ -33,9 +33,9 @@ function registerSuites(runner) {
     expected: "Page title contains 'FluentVoice'",
     suites: smoke,
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        await driver.sleep(1 * 1000)
-        assert.ok((await driver.getTitle()).includes("FluentVoice") || (await driver.getPageSource()).includes("FluentVoice"), "Title missing FluentVoice")
+      await navigate(driver, config, "/")
+      await driver.sleep(1 * 1000)
+      assert.ok((await driver.getTitle()).includes("FluentVoice") || (await driver.getPageSource()).includes("FluentVoice"), "Title missing FluentVoice")
     },
   });
 
@@ -49,9 +49,9 @@ function registerSuites(runner) {
     expected: "H1 headline is visible",
     suites: smoke,
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        let h1 = await visible(driver, By.tagName("h1"), config.timeoutMs)
-        assert.ok(await h1.isDisplayed(), "H1 not visible")
+      await navigate(driver, config, "/")
+      let h1 = await visible(driver, By.tagName("h1"), config.timeoutMs)
+      assert.ok(await h1.isDisplayed(), "H1 not visible")
     },
   });
 
@@ -65,10 +65,10 @@ function registerSuites(runner) {
     expected: "Nav bar is visible",
     suites: smoke,
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        await driver.sleep(0.5 * 1000)
-        let nav = await visible(driver, By.tagName("nav"), config.timeoutMs)
-        assert.ok(await nav.isDisplayed())
+      await navigate(driver, config, "/")
+      await driver.sleep(0.5 * 1000)
+      let nav = await visible(driver, By.tagName("nav"), config.timeoutMs)
+      assert.ok(await nav.isDisplayed())
     },
   });
 
@@ -82,11 +82,11 @@ function registerSuites(runner) {
     expected: "At least one nav link points to /login",
     suites: smoke,
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        let links = await driver.findElements(By.css("nav a"))
-        const hrefs = []; for (const a of links) { hrefs.push(await a.getAttribute('href')); }
-        const login_links = hrefs.filter(h => h && h.includes('/login'));
-        assert.ok(login_links.length >= 1, `Expected login links, got: ${hrefs}`)
+      await navigate(driver, config, "/")
+      let links = await driver.findElements(By.css("nav a"))
+      const hrefs = []; for (const a of links) { hrefs.push(await a.getAttribute('href')); }
+      const login_links = hrefs.filter(h => h && h.includes('/login'));
+      assert.ok(login_links.length >= 1, `Expected login links, got: ${hrefs}`)
     },
   });
 
@@ -100,10 +100,10 @@ function registerSuites(runner) {
     expected: "CTA button is visible with expected text",
     suites: smoke,
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        let links = await driver.findElements(By.css("a"))
-        const texts = []; for (const a of links) { texts.push((await a.getText()).trim().toLowerCase()); }
-        assert.ok(texts.some(t => ["start for free", "get started", "get started free"].includes(t)),             `CTA link !found. Texts found: ${texts.slice(0, 10)}`)
+      await navigate(driver, config, "/")
+      let links = await driver.findElements(By.css("a"))
+      const texts = []; for (const a of links) { texts.push((await a.getText()).trim().toLowerCase()); }
+      assert.ok(texts.some(t => ["start for free", "get started", "get started free"].includes(t)), `CTA link !found. Texts found: ${texts.slice(0, 10)}`)
     },
   });
 
@@ -117,10 +117,10 @@ function registerSuites(runner) {
     expected: "Metrics strip (92%, <30s, etc.) is present",
     suites: smoke,
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        await driver.sleep(0.5 * 1000)
-        let src = (await driver.getPageSource())
-        assert.ok(src.includes("92%") || src.includes("Analysis accuracy"), "Metrics strip not found")
+      await navigate(driver, config, "/")
+      await driver.sleep(0.5 * 1000)
+      let src = (await driver.getPageSource())
+      assert.ok(src.includes("92%") || src.includes("Analysis accuracy"), "Metrics strip not found")
     },
   });
 
@@ -134,9 +134,9 @@ function registerSuites(runner) {
     expected: "Features section is present",
     suites: smoke,
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        let src = (await driver.getPageSource())
-        assert.ok(src.includes("Everything you need") || src.toLowerCase().includes("features"), "Features section missing")
+      await navigate(driver, config, "/")
+      let src = (await driver.getPageSource())
+      assert.ok(src.includes("Everything you need") || src.toLowerCase().includes("features"), "Features section missing")
     },
   });
 
@@ -150,8 +150,8 @@ function registerSuites(runner) {
     expected: "'Whisper' keyword appears in features",
     suites: smoke,
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        assert.ok((await driver.getPageSource()).includes("Whisper"), "Whisper AI mention not found")
+      await navigate(driver, config, "/")
+      assert.ok((await driver.getPageSource()).includes("Whisper"), "Whisper AI mention not found")
     },
   });
 
@@ -165,8 +165,8 @@ function registerSuites(runner) {
     expected: "Section copy is visible",
     suites: smoke,
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        assert.ok((await driver.getPageSource()).includes("How it works") || (await driver.getPageSource()).toLowerCase().includes("recording to report"), "'How it works' section missing")
+      await navigate(driver, config, "/")
+      assert.ok((await driver.getPageSource()).includes("How it works") || (await driver.getPageSource()).toLowerCase().includes("recording to report"), "'How it works' section missing")
     },
   });
 
@@ -180,9 +180,9 @@ function registerSuites(runner) {
     expected: "Footer has 'FluentVoice' or 'NexoVent' text",
     suites: smoke,
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        let footer = await visible(driver, By.tagName("footer"), config.timeoutMs)
-        assert.ok((await footer.getText()).includes("FluentVoice") || (await footer.getText()).includes("NexoVent"), "Footer content missing")
+      await navigate(driver, config, "/")
+      let footer = await visible(driver, By.tagName("footer"), config.timeoutMs)
+      assert.ok((await footer.getText()).includes("FluentVoice") || (await footer.getText()).includes("NexoVent"), "Footer content missing")
     },
   });
 
@@ -196,10 +196,10 @@ function registerSuites(runner) {
     expected: "Link exists with href /login?role=therapist",
     suites: smoke,
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
+      await navigate(driver, config, "/")
       // Use *=contains because basePath prefix is prepended on GitHub Pages
-        let links = await driver.findElements(By.css("a[href*='login?role=therapist'], a[href*='login/?role=therapist'], a[href*='login'][href*='role=therapist']"))
-        assert.ok(links.length >= 1, "Therapist CTA link not found")
+      let links = await driver.findElements(By.css("a[href*='login?role=therapist'], a[href*='login/?role=therapist'], a[href*='login'][href*='role=therapist']"))
+      assert.ok(links.length >= 1, "Therapist CTA link not found")
     },
   });
 
@@ -213,10 +213,10 @@ function registerSuites(runner) {
     expected: "Title is non-empty",
     suites: smoke,
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        await driver.sleep(0.5 * 1000)
-        let title_tag = (await driver.getTitle())
-        assert.ok(title_tag.length > 0, "Empty page title")
+      await navigate(driver, config, "/")
+      await driver.sleep(0.5 * 1000)
+      let title_tag = (await driver.getTitle())
+      assert.ok(title_tag.length > 0, "Empty page title")
     },
   });
 
@@ -230,9 +230,9 @@ function registerSuites(runner) {
     expected: "'Privacy' text found in footer",
     suites: smoke,
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        let src = (await driver.getPageSource())
-        assert.ok(src.includes("Privacy"), "Privacy link missing")
+      await navigate(driver, config, "/")
+      let src = (await driver.getPageSource())
+      assert.ok(src.includes("Privacy"), "Privacy link missing")
     },
   });
 
@@ -246,9 +246,9 @@ function registerSuites(runner) {
     expected: "readyState is 'complete'",
     suites: smoke,
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        await driver.sleep(0.5 * 1000)
-        assert.equal(await driver.executeScript("return document.readyState"), "complete", "Page not fully loaded")
+      await navigate(driver, config, "/")
+      await driver.sleep(0.5 * 1000)
+      assert.equal(await driver.executeScript("return document.readyState"), "complete", "Page not fully loaded")
     },
   });
 
@@ -262,17 +262,17 @@ function registerSuites(runner) {
     expected: "Zero SEVERE console errors (excluding SW/icon/manifest)",
     suites: smoke,
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/");
-        await driver.sleep(500);
-        let errors = [];
-        try {
-            errors = await driver.manage().logs().get("browser");
-        } catch (e) {
-            return "Skipped browser logs check (not supported by browser)";
-        }
-        const harmless = ["sw.js", "icon", "manifest", "woff", ".css", "favicon"];
-        const severe = errors.filter(e => e.level.name === "SEVERE" && !harmless.some(h => e.message.toLowerCase().includes(h)));
-        assert.equal(severe.length, 0, `Console SEVERE errors: ${JSON.stringify(severe.slice(0, 3))}`);
+      await navigate(driver, config, "/");
+      await driver.sleep(500);
+      let errors = [];
+      try {
+        errors = await driver.manage().logs().get("browser");
+      } catch (e) {
+        return "Skipped browser logs check (not supported by browser)";
+      }
+      const harmless = ["sw.js", "icon", "manifest", "woff", ".css", "favicon"];
+      const severe = errors.filter(e => e.level.name === "SEVERE" && !harmless.some(h => e.message.toLowerCase().includes(h)));
+      assert.equal(severe.length, 0, `Console SEVERE errors: ${JSON.stringify(severe.slice(0, 3))}`);
     },
   });
 
@@ -286,10 +286,10 @@ function registerSuites(runner) {
     expected: "Page loads with H1 visible",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(1 * 1000)
-        let h1 = await visible(driver, By.tagName("h1"), config.timeoutMs)
-        assert.ok(await h1.isDisplayed())
+      await navigate(driver, config, "/login")
+      await driver.sleep(1 * 1000)
+      let h1 = await visible(driver, By.tagName("h1"), config.timeoutMs)
+      assert.ok(await h1.isDisplayed())
     },
   });
 
@@ -303,10 +303,10 @@ function registerSuites(runner) {
     expected: "Email input is present",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        let inp = await driver.findElements(By.css("input[type='email']"))
-        assert.ok(inp.length >= 1)
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      let inp = await driver.findElements(By.css("input[type='email']"))
+      assert.ok(inp.length >= 1)
     },
   });
 
@@ -320,10 +320,10 @@ function registerSuites(runner) {
     expected: "Password input is present",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        let inp = await driver.findElements(By.css("input[type='password']"))
-        assert.ok(inp.length >= 1)
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      let inp = await driver.findElements(By.css("input[type='password']"))
+      assert.ok(inp.length >= 1)
     },
   });
 
@@ -337,11 +337,11 @@ function registerSuites(runner) {
     expected: "'Sign in' button/tab exists",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        let tabs = await driver.findElements(By.css("button"))
-        const labels = []; for (const b of tabs) { labels.push((await b.getText()).trim().toLowerCase()); }
-        assert.ok(labels.includes("sign in") || " ".includes("signin").join(labels), `tab.includes(Sign) !found. Buttons: ${labels}`)
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      let tabs = await driver.findElements(By.css("button"))
+      const labels = []; for (const b of tabs) { labels.push((await b.getText()).trim().toLowerCase()); }
+      assert.ok(labels.includes("sign in") || " ".includes("signin").join(labels), `tab.includes(Sign) !found. Buttons: ${labels}`)
     },
   });
 
@@ -355,11 +355,11 @@ function registerSuites(runner) {
     expected: "'Create account' tab exists",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        let btns = await driver.findElements(By.css("button"))
-        const labels = []; for (const b of btns) { labels.push((await b.getText()).trim().toLowerCase()); }
-        assert.ok(labels.some(l => l.includes("create") || l.includes("register")), `Register tab !found. Labels: ${labels}`)
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      let btns = await driver.findElements(By.css("button"))
+      const labels = []; for (const b of btns) { labels.push((await b.getText()).trim().toLowerCase()); }
+      assert.ok(labels.some(l => l.includes("create") || l.includes("register")), `Register tab !found. Labels: ${labels}`)
     },
   });
 
@@ -373,15 +373,15 @@ function registerSuites(runner) {
     expected: "Full name input becomes visible",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        let btns = await driver.findElements(By.css("button"))
-        let register_btn = null; for (const b of btns) { if ((await b.getText()).toLowerCase().includes('create')) { register_btn = b; break; } }
-        assert.ok(register_btn, "Create account button not found")
-        await register_btn.click()
-        await driver.sleep(0.5 * 1000)
-        let name_inputs = await driver.findElements(By.css("input[type='text']"))
-        assert.ok(name_inputs.length >= 1, "Name input not visible after switching to register mode")
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      let btns = await driver.findElements(By.css("button"))
+      let register_btn = null; for (const b of btns) { if ((await b.getText()).toLowerCase().includes('create')) { register_btn = b; break; } }
+      assert.ok(register_btn, "Create account button not found")
+      await register_btn.click()
+      await driver.sleep(0.5 * 1000)
+      let name_inputs = await driver.findElements(By.css("input[type='text']"))
+      assert.ok(name_inputs.length >= 1, "Name input not visible after switching to register mode")
     },
   });
 
@@ -395,13 +395,13 @@ function registerSuites(runner) {
     expected: "Error message appears",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        let submit = await visible(driver, By.css("button.w-full"), config.timeoutMs)
-        await submit.click()
-        await driver.sleep(1 * 1000)
-        let error_msgs = await driver.findElements(By.css("p.text-red-500, p.text-xs.text-red-500"))
-        assert.ok(error_msgs.length > 0, "No error shown for empty form")
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      let submit = await visible(driver, By.css("button.w-full"), config.timeoutMs)
+      await submit.click()
+      await driver.sleep(1 * 1000)
+      let error_msgs = await driver.findElements(By.css("p.text-red-500, p.text-xs.text-red-500"))
+      assert.ok(error_msgs.length > 0, "No error shown for empty form")
     },
   });
 
@@ -415,13 +415,13 @@ function registerSuites(runner) {
     expected: "URL still contains /login",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        await driver.findElement(By.css("input[type='email']")).sendKeys("bad@email.com")
-        await driver.findElement(By.css("input[type='password']")).sendKeys("wrongpassword")
-        await driver.findElement(By.css("button.w-full")).click()
-        await driver.sleep(2 * 1000)
-        assert.ok((await driver.getCurrentUrl()).includes("/login"), "Should stay on login for wrong creds")
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      await driver.findElement(By.css("input[type='email']")).sendKeys("bad@email.com")
+      await driver.findElement(By.css("input[type='password']")).sendKeys("wrongpassword")
+      await driver.findElement(By.css("button.w-full")).click()
+      await driver.sleep(2 * 1000)
+      assert.ok((await driver.getCurrentUrl()).includes("/login"), "Should stay on login for wrong creds")
     },
   });
 
@@ -435,10 +435,10 @@ function registerSuites(runner) {
     expected: "Input type is 'password'",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        let pw_input = await driver.findElement(By.css("input[type='password']"))
-        assert.equal(await pw_input.getAttribute("type"), "password", "Password not masked")
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      let pw_input = await driver.findElement(By.css("input[type='password']"))
+      assert.equal(await pw_input.getAttribute("type"), "password", "Password not masked")
     },
   });
 
@@ -452,30 +452,30 @@ function registerSuites(runner) {
     expected: "Password input toggles to type='text'",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login");
-        await driver.sleep(500);
-        const btns = await driver.findElements(By.css("button[aria-label]"));
-        let toggle = null;
-        for (const b of btns) {
-            if ((await b.getAttribute("aria-label")).toLowerCase().includes("password")) {
-                toggle = b;
-                break;
-            }
+      await navigate(driver, config, "/login");
+      await driver.sleep(500);
+      const btns = await driver.findElements(By.css("button[aria-label]"));
+      let toggle = null;
+      for (const b of btns) {
+        if ((await b.getAttribute("aria-label")).toLowerCase().includes("password")) {
+          toggle = b;
+          break;
         }
-        if (!toggle) {
-            const toggles = await driver.findElements(By.css("button[type='button']"));
-            for (const b of toggles) {
-                if ((await b.findElements(By.css("svg"))).length > 0) {
-                    toggle = b;
-                    break;
-                }
-            }
+      }
+      if (!toggle) {
+        const toggles = await driver.findElements(By.css("button[type='button']"));
+        for (const b of toggles) {
+          if ((await b.findElements(By.css("svg"))).length > 0) {
+            toggle = b;
+            break;
+          }
         }
-        assert.ok(toggle !== null, "Show/hide password toggle not found");
-        await toggle.click();
-        await driver.sleep(300);
-        const pw = await driver.findElement(By.css("input[type='text']"));
-        assert.ok(pw !== null, "After toggle, input should be type=text");
+      }
+      assert.ok(toggle !== null, "Show/hide password toggle not found");
+      await toggle.click();
+      await driver.sleep(300);
+      const pw = await driver.findElement(By.css("input[type='text']"));
+      assert.ok(pw !== null, "After toggle, input should be type=text");
     },
   });
 
@@ -489,11 +489,11 @@ function registerSuites(runner) {
     expected: "Link with basePath-prefixed href='/' is present",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
       // Match exact basePath-aware home href, e.g. /fluentvoice-frontend/ or /
-        let back_link = await visible(driver, By.css("a[href='/'], a[href='/fluentvoice-frontend'], a[href='/fluentvoice-frontend/']"), config.timeoutMs)
-        assert.ok(await back_link.isDisplayed(), "Back to home link not visible")
+      let back_link = await visible(driver, By.css("a[href='/'], a[href='/fluentvoice-frontend'], a[href='/fluentvoice-frontend/']"), config.timeoutMs)
+      assert.ok(await back_link.isDisplayed(), "Back to home link not visible")
     },
   });
 
@@ -507,10 +507,10 @@ function registerSuites(runner) {
     expected: "Forgot password link is present",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        let forgot = await driver.findElements(By.css("a[href*='/forgot-password']"))
-        assert.ok(forgot.length >= 1, "Forgot password link not found")
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      let forgot = await driver.findElements(By.css("a[href*='/forgot-password']"))
+      assert.ok(forgot.length >= 1, "Forgot password link not found")
     },
   });
 
@@ -524,14 +524,14 @@ function registerSuites(runner) {
     expected: "Form submits without JS error",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        await driver.findElement(By.css("input[type='email']")).sendKeys("test@example.com")
-        await driver.findElement(By.css("input[type='password']")).sendKeys("pass")
-        await driver.findElement(By.css("input[type='password']")).sendKeys(Key.RETURN)
-        await driver.sleep(1 * 1000)
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      await driver.findElement(By.css("input[type='email']")).sendKeys("test@example.com")
+      await driver.findElement(By.css("input[type='password']")).sendKeys("pass")
+      await driver.findElement(By.css("input[type='password']")).sendKeys(Key.RETURN)
+      await driver.sleep(1 * 1000)
       // Should stay on login (wrong creds) — not crash
-        assert.ok(await driver.findElement(By.tagName("body")).isDisplayed())
+      assert.ok(await driver.findElement(By.tagName("body")).isDisplayed())
     },
   });
 
@@ -545,17 +545,17 @@ function registerSuites(runner) {
     expected: "Patient and Therapist role buttons appear",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        let btns = await driver.findElements(By.css("button"))
-        let create_btn = null; for (const b of btns) { if ((await b.getText()).toLowerCase().includes('create')) { create_btn = b; break; } }
-        assert.ok(create_btn, "Create account button not found")
-        await create_btn.click()
-        await driver.sleep(0.5 * 1000)
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      let btns = await driver.findElements(By.css("button"))
+      let create_btn = null; for (const b of btns) { if ((await b.getText()).toLowerCase().includes('create')) { create_btn = b; break; } }
+      assert.ok(create_btn, "Create account button not found")
+      await create_btn.click()
+      await driver.sleep(0.5 * 1000)
       // Role selector buttons should appear
-        let role_btns = await driver.findElements(By.css("button[type='button']"))
-        const role_texts = []; for (const b of role_btns) { role_texts.push((await b.getText()).toLowerCase()); }
-        assert.ok(role_texts.some(t => t.includes("patient")) || role_texts.some(t => t.includes("therapist")), `Role selector !shown. Got: ${role_texts}`)
+      let role_btns = await driver.findElements(By.css("button[type='button']"))
+      const role_texts = []; for (const b of role_btns) { role_texts.push((await b.getText()).toLowerCase()); }
+      assert.ok(role_texts.some(t => t.includes("patient")) || role_texts.some(t => t.includes("therapist")), `Role selector !shown. Got: ${role_texts}`)
     },
   });
 
@@ -569,20 +569,20 @@ function registerSuites(runner) {
     expected: "Validation error message appears",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        let btns = await driver.findElements(By.css("button"))
-        let create_btn = null; for (const b of btns) { if ((await b.getText()).toLowerCase().includes('create')) { create_btn = b; break; } }
-        await create_btn.click()
-        await driver.sleep(0.5 * 1000)
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      let btns = await driver.findElements(By.css("button"))
+      let create_btn = null; for (const b of btns) { if ((await b.getText()).toLowerCase().includes('create')) { create_btn = b; break; } }
+      await create_btn.click()
+      await driver.sleep(0.5 * 1000)
       // Leave name blank, fill email + password < 8 chars
-        await driver.findElement(By.css("input[type='email']")).sendKeys("x@x.com")
-        await driver.findElement(By.css("input[type='password']")).sendKeys("short")
-        let submit = await driver.findElement(By.css("button.w-full"))
-        await submit.click()
-        await driver.sleep(1 * 1000)
-        let errors = await driver.findElements(By.css("p.text-red-500, p.text-xs"))
-        assert.ok(errors.length > 0, "No validation error for short register.includes(password)")
+      await driver.findElement(By.css("input[type='email']")).sendKeys("x@x.com")
+      await driver.findElement(By.css("input[type='password']")).sendKeys("short")
+      let submit = await driver.findElement(By.css("button.w-full"))
+      await submit.click()
+      await driver.sleep(1 * 1000)
+      let errors = await driver.findElements(By.css("p.text-red-500, p.text-xs"))
+      assert.ok(errors.length > 0, "No validation error for short register.includes(password)")
     },
   });
 
@@ -596,9 +596,9 @@ function registerSuites(runner) {
     expected: "Page loads successfully",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/forgot-password")
-        await driver.sleep(0.5 * 1000)
-        assert.ok((await driver.getCurrentUrl()).toLowerCase().includes("forgot") || (await driver.getPageSource()).toLowerCase().includes("forgot"), "Forgot-password page not reachable")
+      await navigate(driver, config, "/forgot-password")
+      await driver.sleep(0.5 * 1000)
+      assert.ok((await driver.getCurrentUrl()).toLowerCase().includes("forgot") || (await driver.getPageSource()).toLowerCase().includes("forgot"), "Forgot-password page not reachable")
     },
   });
 
@@ -613,11 +613,11 @@ function registerSuites(runner) {
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
       // Patient route without auth should redirect to /login
-        await navigate(driver, config, "/")
-        await driver.manage().deleteAllCookies()
-        await driver.executeScript("await localStorage.clear();")
-        await navigate(driver, config, "/patient")
-        await urlContains(driver, "/login", 8 * 1000)
+      await navigate(driver, config, "/")
+      await driver.manage().deleteAllCookies()
+      await driver.executeScript("await localStorage.clear();")
+      await navigate(driver, config, "/patient")
+      await urlContains(driver, "/login", 8 * 1000)
     },
   });
 
@@ -631,11 +631,11 @@ function registerSuites(runner) {
     expected: "Redirected to /login",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        await driver.manage().deleteAllCookies()
-        await driver.executeScript("await localStorage.clear();")
-        await navigate(driver, config, "/therapist")
-        await urlContains(driver, "/login", 8 * 1000)
+      await navigate(driver, config, "/")
+      await driver.manage().deleteAllCookies()
+      await driver.executeScript("await localStorage.clear();")
+      await navigate(driver, config, "/therapist")
+      await urlContains(driver, "/login", 8 * 1000)
     },
   });
 
@@ -649,16 +649,16 @@ function registerSuites(runner) {
     expected: "Dashboard H1 is visible",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient")
-        await driver.sleep(1 * 1000)
-        let h1 = await visible(driver, By.tagName("h1"), config.timeoutMs)
-        assert.ok(await h1.isDisplayed())
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient")
+      await driver.sleep(1 * 1000)
+      let h1 = await visible(driver, By.tagName("h1"), config.timeoutMs)
+      assert.ok(await h1.isDisplayed())
     },
   });
 
@@ -672,17 +672,17 @@ function registerSuites(runner) {
     expected: "Greeting text visible",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient")
-        await driver.sleep(1 * 1000)
-        let src = (await driver.getPageSource())
-        let greetings = ["Good morning", "Good afternoon", "Good evening"]
-        assert.ok(greetings.some(g => src.includes(g)), "Greeting not found")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient")
+      await driver.sleep(1 * 1000)
+      let src = (await driver.getPageSource())
+      let greetings = ["Good morning", "Good afternoon", "Good evening"]
+      assert.ok(greetings.some(g => src.includes(g)), "Greeting not found")
     },
   });
 
@@ -696,16 +696,16 @@ function registerSuites(runner) {
     expected: "'Record' button is visible",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient")
-        await driver.sleep(1 * 1000)
-        let src = (await driver.getPageSource())
-        assert.ok(src.includes("Record"), "'Record' action button missing")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient")
+      await driver.sleep(1 * 1000)
+      let src = (await driver.getPageSource())
+      assert.ok(src.includes("Record"), "'Record' action button missing")
     },
   });
 
@@ -719,17 +719,17 @@ function registerSuites(runner) {
     expected: "Fluency score or empty state card is present",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource())
-        let has_score = src.includes("Fluency score") || src.toLowerCase().includes("fluency")
-        assert.ok(has_score, "Fluency score section not found")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource())
+      let has_score = src.includes("Fluency score") || src.toLowerCase().includes("fluency")
+      assert.ok(has_score, "Fluency score section not found")
     },
   });
 
@@ -743,16 +743,16 @@ function registerSuites(runner) {
     expected: "Link to /patient/record exists",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient")
-        await driver.sleep(1 * 1000)
-        let links = await driver.findElements(By.css("a[href*='/patient/record']"))
-        assert.ok(links.length >= 1, "Record link not found")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient")
+      await driver.sleep(1 * 1000)
+      let links = await driver.findElements(By.css("a[href*='/patient/record']"))
+      assert.ok(links.length >= 1, "Record link not found")
     },
   });
 
@@ -766,16 +766,16 @@ function registerSuites(runner) {
     expected: "Link to /patient/sessions present",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient")
-        await driver.sleep(1 * 1000)
-        let links = await driver.findElements(By.css("a[href*='/patient/sessions']"))
-        assert.ok(links.length >= 1, "Sessions link not found")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient")
+      await driver.sleep(1 * 1000)
+      let links = await driver.findElements(By.css("a[href*='/patient/sessions']"))
+      assert.ok(links.length >= 1, "Sessions link not found")
     },
   });
 
@@ -789,16 +789,16 @@ function registerSuites(runner) {
     expected: "Link to /patient/treatment present",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient")
-        await driver.sleep(1 * 1000)
-        let links = await driver.findElements(By.css("a[href*='/patient/treatment']"))
-        assert.ok(links.length >= 1, "Treatment plan link not found")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient")
+      await driver.sleep(1 * 1000)
+      let links = await driver.findElements(By.css("a[href*='/patient/treatment']"))
+      assert.ok(links.length >= 1, "Treatment plan link not found")
     },
   });
 
@@ -812,16 +812,16 @@ function registerSuites(runner) {
     expected: "'Actions' strip is present",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource())
-        assert.ok(src.includes("Actions"), "Actions strip not found")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource())
+      assert.ok(src.includes("Actions"), "Actions strip not found")
     },
   });
 
@@ -835,16 +835,16 @@ function registerSuites(runner) {
     expected: "Trend chart or placeholder is visible",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource())
-        assert.ok(src.includes("Fluency Over Time") || src.toLowerCase().includes("fluency"), "Trend chart not found")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource())
+      assert.ok(src.includes("Fluency Over Time") || src.toLowerCase().includes("fluency"), "Trend chart not found")
     },
   });
 
@@ -858,16 +858,16 @@ function registerSuites(runner) {
     expected: "Sidebar nav links are present",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient")
-        await driver.sleep(1 * 1000)
-        let sidebar_links = await driver.findElements(By.css("nav a, aside a"))
-        assert.ok(sidebar_links.length >= 1 || (await driver.getPageSource()).toLowerCase().includes("sidebar"), "Sidebar not detected")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient")
+      await driver.sleep(1 * 1000)
+      let sidebar_links = await driver.findElements(By.css("nav a, aside a"))
+      assert.ok(sidebar_links.length >= 1 || (await driver.getPageSource()).toLowerCase().includes("sidebar"), "Sidebar not detected")
     },
   });
 
@@ -881,17 +881,17 @@ function registerSuites(runner) {
     expected: "At least 1 SVG is in DOM",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient")
-        await driver.sleep(1.5 * 1000)
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient")
+      await driver.sleep(1.5 * 1000)
       // Look for SVG chart elements
-        let svgs = await driver.findElements(By.css("svg"))
-        assert.ok(svgs.length >= 1, "No SVG elements found (charts missing)")
+      let svgs = await driver.findElements(By.css("svg"))
+      assert.ok(svgs.length >= 1, "No SVG elements found (charts missing)")
     },
   });
 
@@ -905,19 +905,19 @@ function registerSuites(runner) {
     expected: "URL changes to /patient/record",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient")
-        await driver.sleep(1.5 * 1000)
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient")
+      await driver.sleep(1.5 * 1000)
       // Verify link is present in sidebar
-        assert.ok((await driver.findElements(By.css("a[href*='/patient/record']"))).length >= 1, "Record link not sidebar.includes(found)")
-        await navigate(driver, config, "/patient/record")
-        await driver.sleep(1.5 * 1000)
-        assert.ok((await driver.getCurrentUrl()).includes("/patient/record"), `Did !navigate to /patient/record. Got: ${(await driver.getCurrentUrl())}`)
+      assert.ok((await driver.findElements(By.css("a[href*='/patient/record']"))).length >= 1, "Record link not sidebar.includes(found)")
+      await navigate(driver, config, "/patient/record")
+      await driver.sleep(1.5 * 1000)
+      assert.ok((await driver.getCurrentUrl()).includes("/patient/record"), `Did !navigate to /patient/record. Got: ${(await driver.getCurrentUrl())}`)
     },
   });
 
@@ -931,18 +931,18 @@ function registerSuites(runner) {
     expected: "Session count or 'Showing sample data' label visible",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource())
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource())
       // Check sparkles indicator
-        let has_indicator = src.toLowerCase().includes("session") && (src.toLowerCase().includes("recorded") || src.toLowerCase().includes("sample"))
-        assert.ok(has_indicator, "Session count indicator not found")
+      let has_indicator = src.toLowerCase().includes("session") && (src.toLowerCase().includes("recorded") || src.toLowerCase().includes("sample"))
+      assert.ok(has_indicator, "Session count indicator not found")
     },
   });
 
@@ -956,17 +956,17 @@ function registerSuites(runner) {
     expected: "No error banner in first 500 chars of page source",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource())
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource())
       // Check that no unhandled JS error banner appears
-        assert.ok(!src.slice(0, 500).includes("Error"), "Possible error banner at top of page")
+      assert.ok(!src.slice(0, 500).includes("Error"), "Possible error banner at top of page")
     },
   });
 
@@ -980,19 +980,19 @@ function registerSuites(runner) {
     expected: "URL is /patient/sessions",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient")
-        await driver.sleep(1.5 * 1000)
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient")
+      await driver.sleep(1.5 * 1000)
       // Verify link is present in sidebar
-        assert.ok((await driver.findElements(By.css("a[href*='/patient/sessions']"))).length >= 1, "Sessions link not sidebar.includes(found)")
-        await navigate(driver, config, "/patient/sessions")
-        await driver.sleep(1.5 * 1000)
-        assert.ok((await driver.getCurrentUrl()).includes("/patient/sessions"), `Expected /patient/sessions, got ${(await driver.getCurrentUrl())}`)
+      assert.ok((await driver.findElements(By.css("a[href*='/patient/sessions']"))).length >= 1, "Sessions link not sidebar.includes(found)")
+      await navigate(driver, config, "/patient/sessions")
+      await driver.sleep(1.5 * 1000)
+      assert.ok((await driver.getCurrentUrl()).includes("/patient/sessions"), `Expected /patient/sessions, got ${(await driver.getCurrentUrl())}`)
     },
   });
 
@@ -1006,18 +1006,18 @@ function registerSuites(runner) {
     expected: "H1 or H2 is present",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/record")
-        await driver.sleep(1.5 * 1000)
-        let h1s = await driver.findElements(By.tagName("h1"))
-        let h2s = await driver.findElements(By.tagName("h2"))
-        let headings = h1s + h2s
-        assert.ok(headings.length >= 1, "No headings found on record page")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/record")
+      await driver.sleep(1.5 * 1000)
+      let h1s = await driver.findElements(By.tagName("h1"))
+      let h2s = await driver.findElements(By.tagName("h2"))
+      let headings = h1s + h2s
+      assert.ok(headings.length >= 1, "No headings found on record page")
     },
   });
 
@@ -1031,17 +1031,17 @@ function registerSuites(runner) {
     expected: "Record UI references found in page",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/record")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        let has_record = src.includes("record") || src.includes("microphone") || src.includes("mic")
-        assert.ok(has_record, "Record-related content not found")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/record")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      let has_record = src.includes("record") || src.includes("microphone") || src.includes("mic")
+      assert.ok(has_record, "Record-related content not found")
     },
   });
 
@@ -1055,17 +1055,17 @@ function registerSuites(runner) {
     expected: "Upload references (file/WAV/MP3) found in page",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/record")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        let has_upload = src.includes("upload") || src.includes("file") || src.includes("wav") || src.includes("mp3")
-        assert.ok(has_upload, "Upload-related content not found on record page")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/record")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      let has_upload = src.includes("upload") || src.includes("file") || src.includes("wav") || src.includes("mp3")
+      assert.ok(has_upload, "Upload-related content not found on record page")
     },
   });
 
@@ -1079,16 +1079,16 @@ function registerSuites(runner) {
     expected: "At least 1 button found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/record")
-        await driver.sleep(1.5 * 1000)
-        let btns = await driver.findElements(By.css("button"))
-        assert.ok(btns.length >= 1, "No buttons found on record page")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/record")
+      await driver.sleep(1.5 * 1000)
+      let btns = await driver.findElements(By.css("button"))
+      assert.ok(btns.length >= 1, "No buttons found on record page")
     },
   });
 
@@ -1102,16 +1102,16 @@ function registerSuites(runner) {
     expected: "File input element exists",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/record")
-        await driver.sleep(1.5 * 1000)
-        let inputs = await driver.findElements(By.css("input[type='file']"))
-        assert.ok(inputs.length >= 1, "File input not found")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/record")
+      await driver.sleep(1.5 * 1000)
+      let inputs = await driver.findElements(By.css("input[type='file']"))
+      assert.ok(inputs.length >= 1, "File input not found")
     },
   });
 
@@ -1125,16 +1125,16 @@ function registerSuites(runner) {
     expected: "Analysis result references exist",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/record")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        assert.ok(src.includes("fluency") || src.includes("analysis") || src.includes("score"), "No reference to analysis result on record page")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/record")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      assert.ok(src.includes("fluency") || src.includes("analysis") || src.includes("score"), "No reference to analysis result on record page")
     },
   });
 
@@ -1148,16 +1148,16 @@ function registerSuites(runner) {
     expected: "'30' or 'seconds' appears on page",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/record")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource())
-        assert.ok(src.includes("30") || src.toLowerCase().includes("seconds"), "30-second guidance not found")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/record")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource())
+      assert.ok(src.includes("30") || src.toLowerCase().includes("seconds"), "30-second guidance not found")
     },
   });
 
@@ -1171,17 +1171,17 @@ function registerSuites(runner) {
     expected: "Back link or sidebar link to /patient exists",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/record")
-        await driver.sleep(1.5 * 1000)
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/record")
+      await driver.sleep(1.5 * 1000)
       // Use ends-with selector: /patient/ (exact) to avoid matching /patient/record etc.
-        let back = await driver.findElements(By.css(`a[href='${BASE_PATH}/patient/']`))
-        assert.ok(back.length >= 1 || (await driver.getPageSource()).toLowerCase().includes("back"), "No back/nav link to /patient found")
+      let back = await driver.findElements(By.css(`a[href='${BASE_PATH}/patient/']`))
+      assert.ok(back.length >= 1 || (await driver.getPageSource()).toLowerCase().includes("back"), "No back/nav link to /patient found")
     },
   });
 
@@ -1195,18 +1195,18 @@ function registerSuites(runner) {
     expected: "No '404 | Not Found' page rendered",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/record")
-        await driver.sleep(1.5 * 1000)
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/record")
+      await driver.sleep(1.5 * 1000)
       // Check for real 404 page — not just any occurrence of "404" in content
-        let src = (await driver.getPageSource()).toLowerCase()
-        let is_404_page = src.slice(0, 500).includes("page not found") || src.includes("<h1>404") || src.includes("404 | not found")
-        assert.ok(!is_404_page, "404 page detected on /patient/record")
+      let src = (await driver.getPageSource()).toLowerCase()
+      let is_404_page = src.slice(0, 500).includes("page not found") || src.includes("<h1>404") || src.includes("404 | not found")
+      assert.ok(!is_404_page, "404 page detected on /patient/record")
     },
   });
 
@@ -1220,18 +1220,18 @@ function registerSuites(runner) {
     expected: "At least one recording control keyword found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/record")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/record")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
       // Should see waveform or timer or mic-related UI
-        let has_ui = ["waveform", "timer", "recording", "start", "stop"].some(k => src.includes(k))
-        assert.ok(has_ui, "Recording control UI not found")
+      let has_ui = ["waveform", "timer", "recording", "start", "stop"].some(k => src.includes(k))
+      assert.ok(has_ui, "Recording control UI not found")
     },
   });
 
@@ -1245,9 +1245,9 @@ function registerSuites(runner) {
     expected: "URL contains /patient/sessions",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/patient/sessions")
-        await driver.sleep(1.5 * 1000)
-        assert.ok((await driver.getCurrentUrl()).includes("/patient/sessions"), `Not on sessions page: ${(await driver.getCurrentUrl())}`)
+      await navigate(driver, config, "/patient/sessions")
+      await driver.sleep(1.5 * 1000)
+      assert.ok((await driver.getCurrentUrl()).includes("/patient/sessions"), `Not on sessions page: ${(await driver.getCurrentUrl())}`)
     },
   });
 
@@ -1261,10 +1261,10 @@ function registerSuites(runner) {
     expected: "At least 1 heading found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/patient/sessions")
-        await driver.sleep(1.5 * 1000)
-        let headings = await driver.findElements(By.css("h1, h2, h3"))
-        assert.ok(headings.length >= 1, "No headings on sessions page")
+      await navigate(driver, config, "/patient/sessions")
+      await driver.sleep(1.5 * 1000)
+      let headings = await driver.findElements(By.css("h1, h2, h3"))
+      assert.ok(headings.length >= 1, "No headings on sessions page")
     },
   });
 
@@ -1278,11 +1278,11 @@ function registerSuites(runner) {
     expected: "Session-related content found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/patient/sessions")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        const has_sessions = [src.includes("session"), src.includes("fluency")];
-        assert.ok(has_sessions[0] || has_sessions[1], "Sessions content not found")
+      await navigate(driver, config, "/patient/sessions")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      const has_sessions = [src.includes("session"), src.includes("fluency")];
+      assert.ok(has_sessions[0] || has_sessions[1], "Sessions content not found")
     },
   });
 
@@ -1296,10 +1296,10 @@ function registerSuites(runner) {
     expected: "Score or date metadata found in page",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/patient/sessions")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        assert.ok(src.includes("score") || src.includes("date") || src.includes("fluency"), "No score/date/sessions.includes(fluency) list")
+      await navigate(driver, config, "/patient/sessions")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      assert.ok(src.includes("score") || src.includes("date") || src.includes("fluency"), "No score/date/sessions.includes(fluency) list")
     },
   });
 
@@ -1313,13 +1313,13 @@ function registerSuites(runner) {
     expected: "New session CTA found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/patient/sessions")
-        await driver.sleep(1.5 * 1000)
-        let record_links = await driver.findElements(By.css("a[href*='/patient/record']"))
-        let btns = await driver.findElements(By.css("button"))
-        let src = (await driver.getPageSource()).toLowerCase()
-        let has_cta = record_links.length > 0 || src.includes("new session") || src.includes("start")
-        assert.ok(has_cta, "No CTA to create new session")
+      await navigate(driver, config, "/patient/sessions")
+      await driver.sleep(1.5 * 1000)
+      let record_links = await driver.findElements(By.css("a[href*='/patient/record']"))
+      let btns = await driver.findElements(By.css("button"))
+      let src = (await driver.getPageSource()).toLowerCase()
+      let has_cta = record_links.length > 0 || src.includes("new session") || src.includes("start")
+      assert.ok(has_cta, "No CTA to create new session")
     },
   });
 
@@ -1333,11 +1333,11 @@ function registerSuites(runner) {
     expected: "Page renders without 404",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/patient/sessions")
-        await driver.sleep(1.5 * 1000)
+      await navigate(driver, config, "/patient/sessions")
+      await driver.sleep(1.5 * 1000)
       // Check no 404
-        let src = (await driver.getPageSource()).toLowerCase()
-        assert.ok(!src.slice(0, 200).includes("404"), "404 on sessions page")
+      let src = (await driver.getPageSource()).toLowerCase()
+      assert.ok(!src.slice(0, 200).includes("404"), "404 on sessions page")
     },
   });
 
@@ -1351,12 +1351,12 @@ function registerSuites(runner) {
     expected: "Filter UI presence noted (pass regardless)",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/patient/sessions")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        let has_filter = ["filter", "search", "sort", "all sessions"].some(k => src.includes(k))
+      await navigate(driver, config, "/patient/sessions")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      let has_filter = ["filter", "search", "sort", "all sessions"].some(k => src.includes(k))
       // filter is optional — just log what's present
-        return `Filter/search UI present: ${has_filter}`
+      return `Filter/search UI present: ${has_filter}`
     },
   });
 
@@ -1370,12 +1370,12 @@ function registerSuites(runner) {
     expected: "Pagination check noted (pass regardless)",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/patient/sessions")
-        await driver.sleep(1.5 * 1000)
+      await navigate(driver, config, "/patient/sessions")
+      await driver.sleep(1.5 * 1000)
       // Pagination or 'load more' optional
-        let src = (await driver.getPageSource()).toLowerCase()
-        let has_page = ["page", "next", "prev", "load more"].some(k => src.includes(k))
-        return `Pagination present: ${has_page}`
+      let src = (await driver.getPageSource()).toLowerCase()
+      let has_page = ["page", "next", "prev", "load more"].some(k => src.includes(k))
+      return `Pagination present: ${has_page}`
     },
   });
 
@@ -1389,15 +1389,15 @@ function registerSuites(runner) {
     expected: "Page renders with appointment-related content",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/appointments")
-        await driver.sleep(1.5 * 1000)
-        assert.ok((await driver.getCurrentUrl()).toLowerCase().includes("appointment") || (await driver.getPageSource()).toLowerCase().includes("appointment"))
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/appointments")
+      await driver.sleep(1.5 * 1000)
+      assert.ok((await driver.getCurrentUrl()).toLowerCase().includes("appointment") || (await driver.getPageSource()).toLowerCase().includes("appointment"))
     },
   });
 
@@ -1411,16 +1411,16 @@ function registerSuites(runner) {
     expected: "Heading found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/appointments")
-        await driver.sleep(1.5 * 1000)
-        let headings = await driver.findElements(By.css("h1, h2, h3"))
-        assert.ok(headings.length >= 1)
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/appointments")
+      await driver.sleep(1.5 * 1000)
+      let headings = await driver.findElements(By.css("h1, h2, h3"))
+      assert.ok(headings.length >= 1)
     },
   });
 
@@ -1434,17 +1434,17 @@ function registerSuites(runner) {
     expected: "Check noted (pass regardless)",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/appointments")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        let has_book = ["book", "schedule", "request", "new appointment", "add"].some(k => src.includes(k))
-        return `Booking CTA found: ${has_book}`
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/appointments")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      let has_book = ["book", "schedule", "request", "new appointment", "add"].some(k => src.includes(k))
+      return `Booking CTA found: ${has_book}`
     },
   });
 
@@ -1458,17 +1458,17 @@ function registerSuites(runner) {
     expected: "Content or empty state visible",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/appointments")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        let has_appt = ["pending", "confirmed", "date", "time", "therapist", "no appointment"].some(k => src.includes(k))
-        assert.ok(has_appt, "No appointment data or empty state found")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/appointments")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      let has_appt = ["pending", "confirmed", "date", "time", "therapist", "no appointment"].some(k => src.includes(k))
+      assert.ok(has_appt, "No appointment data or empty state found")
     },
   });
 
@@ -1482,16 +1482,16 @@ function registerSuites(runner) {
     expected: "No 404 in page source",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/appointments")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        assert.ok(!src.slice(0, 200).includes("404"), "404 on appointments page")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/appointments")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      assert.ok(!src.slice(0, 200).includes("404"), "404 on appointments page")
     },
   });
 
@@ -1505,17 +1505,17 @@ function registerSuites(runner) {
     expected: "Check noted (pass regardless)",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/appointments")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        let has_status = ["pending", "confirmed", "status"].some(k => src.includes(k))
-        return `Status badge found: ${has_status}`
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/appointments")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      let has_status = ["pending", "confirmed", "status"].some(k => src.includes(k))
+      return `Status badge found: ${has_status}`
     },
   });
 
@@ -1529,9 +1529,9 @@ function registerSuites(runner) {
     expected: "Treatment content visible",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/patient/treatment")
-        await driver.sleep(1.5 * 1000)
-        assert.ok((await driver.getCurrentUrl()).toLowerCase().includes("treatment") || (await driver.getPageSource()).toLowerCase().includes("treatment"))
+      await navigate(driver, config, "/patient/treatment")
+      await driver.sleep(1.5 * 1000)
+      assert.ok((await driver.getCurrentUrl()).toLowerCase().includes("treatment") || (await driver.getPageSource()).toLowerCase().includes("treatment"))
     },
   });
 
@@ -1545,11 +1545,11 @@ function registerSuites(runner) {
     expected: "Treatment-related content found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/patient/treatment")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        let has_plan = ["treatment", "exercise", "goal", "plan", "practice"].some(k => src.includes(k))
-        assert.ok(has_plan, "No treatment plan content found")
+      await navigate(driver, config, "/patient/treatment")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      let has_plan = ["treatment", "exercise", "goal", "plan", "practice"].some(k => src.includes(k))
+      assert.ok(has_plan, "No treatment plan content found")
     },
   });
 
@@ -1563,10 +1563,10 @@ function registerSuites(runner) {
     expected: "Heading found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/patient/treatment")
-        await driver.sleep(1.5 * 1000)
-        let headings = await driver.findElements(By.css("h1, h2, h3"))
-        assert.ok(headings.length >= 1)
+      await navigate(driver, config, "/patient/treatment")
+      await driver.sleep(1.5 * 1000)
+      let headings = await driver.findElements(By.css("h1, h2, h3"))
+      assert.ok(headings.length >= 1)
     },
   });
 
@@ -1580,10 +1580,10 @@ function registerSuites(runner) {
     expected: "No 404",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/patient/treatment")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        assert.ok(!src.slice(0, 200).includes("404"))
+      await navigate(driver, config, "/patient/treatment")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      assert.ok(!src.slice(0, 200).includes("404"))
     },
   });
 
@@ -1597,11 +1597,11 @@ function registerSuites(runner) {
     expected: "Notes check noted (pass regardless)",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/patient/treatment")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        let has_notes = ["note", "therapist note", "instructions"].some(k => src.includes(k))
-        return `Notes section found: ${has_notes}`
+      await navigate(driver, config, "/patient/treatment")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      let has_notes = ["note", "therapist note", "instructions"].some(k => src.includes(k))
+      return `Notes section found: ${has_notes}`
     },
   });
 
@@ -1615,15 +1615,15 @@ function registerSuites(runner) {
     expected: "Profile content visible",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/profile")
-        await driver.sleep(1.5 * 1000)
-        assert.ok((await driver.getCurrentUrl()).toLowerCase().includes("profile") || (await driver.getPageSource()).toLowerCase().includes("profile"))
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/profile")
+      await driver.sleep(1.5 * 1000)
+      assert.ok((await driver.getCurrentUrl()).toLowerCase().includes("profile") || (await driver.getPageSource()).toLowerCase().includes("profile"))
     },
   });
 
@@ -1637,17 +1637,17 @@ function registerSuites(runner) {
     expected: "Profile info keywords present",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/profile")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        let has_profile = ["name", "email", "profile"].some(k => src.includes(k))
-        assert.ok(has_profile)
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/profile")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      let has_profile = ["name", "email", "profile"].some(k => src.includes(k))
+      assert.ok(has_profile)
     },
   });
 
@@ -1661,16 +1661,16 @@ function registerSuites(runner) {
     expected: "Heading found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/profile")
-        await driver.sleep(1.5 * 1000)
-        let headings = await driver.findElements(By.css("h1, h2, h3"))
-        assert.ok(headings.length >= 1)
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/profile")
+      await driver.sleep(1.5 * 1000)
+      let headings = await driver.findElements(By.css("h1, h2, h3"))
+      assert.ok(headings.length >= 1)
     },
   });
 
@@ -1684,16 +1684,16 @@ function registerSuites(runner) {
     expected: "No 404",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/patient/profile")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        assert.ok(!src.slice(0, 200).includes("404"))
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/patient/profile")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      assert.ok(!src.slice(0, 200).includes("404"))
     },
   });
 
@@ -1707,16 +1707,16 @@ function registerSuites(runner) {
     expected: "H1 heading visible",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist")
-        await driver.sleep(1.5 * 1000)
-        let h1 = await visible(driver, By.tagName("h1"), config.timeoutMs)
-        assert.ok(await h1.isDisplayed())
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist")
+      await driver.sleep(1.5 * 1000)
+      let h1 = await visible(driver, By.tagName("h1"), config.timeoutMs)
+      assert.ok(await h1.isDisplayed())
     },
   });
 
@@ -1730,16 +1730,16 @@ function registerSuites(runner) {
     expected: "Therapist and patient keywords present",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        assert.ok(src.includes("therapist") && (src.includes("patient") || src.includes("dashboard")), "Therapist dashboard content missing")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      assert.ok(src.includes("therapist") && (src.includes("patient") || src.includes("dashboard")), "Therapist dashboard content missing")
     },
   });
 
@@ -1753,16 +1753,16 @@ function registerSuites(runner) {
     expected: "Roster heading present",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource())
-        assert.ok(src.includes("Active Patients") || src.includes("Patient Roster"), "Patient roster heading not found")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource())
+      assert.ok(src.includes("Active Patients") || src.includes("Patient Roster"), "Patient roster heading not found")
     },
   });
 
@@ -1776,16 +1776,16 @@ function registerSuites(runner) {
     expected: "'Sessions This Month' card present",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource())
-        assert.ok(src.includes("Sessions This Month") || src.toLowerCase().includes("sessions"), "Sessions stat not found")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource())
+      assert.ok(src.includes("Sessions This Month") || src.toLowerCase().includes("sessions"), "Sessions stat not found")
     },
   });
 
@@ -1799,16 +1799,16 @@ function registerSuites(runner) {
     expected: "Avg Fluency stat present",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource())
-        assert.ok(src.includes("Avg Fluency") || src.toLowerCase().includes("fluency"), "Avg fluency stat missing")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource())
+      assert.ok(src.includes("Avg Fluency") || src.toLowerCase().includes("fluency"), "Avg fluency stat missing")
     },
   });
 
@@ -1822,16 +1822,16 @@ function registerSuites(runner) {
     expected: "Appointments section present",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource())
-        assert.ok(src.includes("Upcoming Appointments") || src.toLowerCase().includes("appointment"), "Appointments section missing")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource())
+      assert.ok(src.includes("Upcoming Appointments") || src.toLowerCase().includes("appointment"), "Appointments section missing")
     },
   });
 
@@ -1845,17 +1845,17 @@ function registerSuites(runner) {
     expected: "Refresh button found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist")
-        await driver.sleep(1.5 * 1000)
-        let refresh_btns = await driver.findElements(By.css("button"))
-        const labels = []; for (const b of refresh_btns) { labels.push((await b.getText()).trim().toLowerCase()); }
-        assert.ok(labels.includes("refresh"), `Refresh button !found. Buttons: ${labels}`)
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist")
+      await driver.sleep(1.5 * 1000)
+      let refresh_btns = await driver.findElements(By.css("button"))
+      const labels = []; for (const b of refresh_btns) { labels.push((await b.getText()).trim().toLowerCase()); }
+      assert.ok(labels.includes("refresh"), `Refresh button !found. Buttons: ${labels}`)
     },
   });
 
@@ -1869,16 +1869,16 @@ function registerSuites(runner) {
     expected: "Link to /therapist/patients found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist")
-        await driver.sleep(1.5 * 1000)
-        let all_patients_link = await driver.findElements(By.css("a[href*='/therapist/patients']"))
-        assert.ok(all_patients_link.length >= 1, "'All patients' link not found")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist")
+      await driver.sleep(1.5 * 1000)
+      let all_patients_link = await driver.findElements(By.css("a[href*='/therapist/patients']"))
+      assert.ok(all_patients_link.length >= 1, "'All patients' link not found")
     },
   });
 
@@ -1892,19 +1892,19 @@ function registerSuites(runner) {
     expected: "URL changes to /therapist/patients",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist")
-        await driver.sleep(1.5 * 1000)
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist")
+      await driver.sleep(1.5 * 1000)
       // Verify link is present in sidebar
-        assert.ok((await driver.findElements(By.css("a[href*='/therapist/patients']"))).length >= 1, "Patients link not sidebar.includes(found)")
-        await navigate(driver, config, "/therapist/patients")
-        await driver.sleep(1.5 * 1000)
-        assert.ok((await driver.getCurrentUrl()).includes("/therapist/patients"), `Expected /therapist/patients, got ${(await driver.getCurrentUrl())}`)
+      assert.ok((await driver.findElements(By.css("a[href*='/therapist/patients']"))).length >= 1, "Patients link not sidebar.includes(found)")
+      await navigate(driver, config, "/therapist/patients")
+      await driver.sleep(1.5 * 1000)
+      assert.ok((await driver.getCurrentUrl()).includes("/therapist/patients"), `Expected /therapist/patients, got ${(await driver.getCurrentUrl())}`)
     },
   });
 
@@ -1918,16 +1918,16 @@ function registerSuites(runner) {
     expected: "Heading found on patients page",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist/patients")
-        await driver.sleep(1.5 * 1000)
-        let headings = await driver.findElements(By.css("h1, h2, h3"))
-        assert.ok(headings.length >= 1)
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist/patients")
+      await driver.sleep(1.5 * 1000)
+      let headings = await driver.findElements(By.css("h1, h2, h3"))
+      assert.ok(headings.length >= 1)
     },
   });
 
@@ -1941,17 +1941,17 @@ function registerSuites(runner) {
     expected: "Patient keyword found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist/patients")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        let has_patients = src.includes("patient")
-        assert.ok(has_patients)
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist/patients")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      let has_patients = src.includes("patient")
+      assert.ok(has_patients)
     },
   });
 
@@ -1965,18 +1965,18 @@ function registerSuites(runner) {
     expected: "Trend check noted (pass regardless)",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource())
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource())
       // Check for trend indicators
-        let has_trend = ["improving", "stable", "declining"].some(k => src.includes(k))
-        return `Trend indicators found: ${has_trend}`
+      let has_trend = ["improving", "stable", "declining"].some(k => src.includes(k))
+      return `Trend indicators found: ${has_trend}`
     },
   });
 
@@ -1990,16 +1990,16 @@ function registerSuites(runner) {
     expected: "Data indicator visible",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource())
-        assert.ok(src.includes("Sample data") || src.toLowerCase().includes("patients"), "Either real data or sample data indicator should be present")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource())
+      assert.ok(src.includes("Sample data") || src.toLowerCase().includes("patients"), "Either real data or sample data indicator should be present")
     },
   });
 
@@ -2013,16 +2013,16 @@ function registerSuites(runner) {
     expected: "No 404 in page source",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        assert.ok(!src.slice(0, 200).includes("404"))
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      assert.ok(!src.slice(0, 200).includes("404"))
     },
   });
 
@@ -2036,15 +2036,15 @@ function registerSuites(runner) {
     expected: "Page renders with appointment content",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist/appointments")
-        await driver.sleep(1.5 * 1000)
-        assert.ok((await driver.getCurrentUrl()).toLowerCase().includes("appointments") || (await driver.getPageSource()).toLowerCase().includes("appointment"))
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist/appointments")
+      await driver.sleep(1.5 * 1000)
+      assert.ok((await driver.getCurrentUrl()).toLowerCase().includes("appointments") || (await driver.getPageSource()).toLowerCase().includes("appointment"))
     },
   });
 
@@ -2058,16 +2058,16 @@ function registerSuites(runner) {
     expected: "Heading found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist/appointments")
-        await driver.sleep(1.5 * 1000)
-        let headings = await driver.findElements(By.css("h1, h2, h3"))
-        assert.ok(headings.length >= 1)
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist/appointments")
+      await driver.sleep(1.5 * 1000)
+      let headings = await driver.findElements(By.css("h1, h2, h3"))
+      assert.ok(headings.length >= 1)
     },
   });
 
@@ -2081,17 +2081,17 @@ function registerSuites(runner) {
     expected: "Appointment content found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist/appointments")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        let has_content = ["pending", "confirmed", "no appointment", "patient", "date", "time"].some(k => src.includes(k))
-        assert.ok(has_content, "No appointment-related content found")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist/appointments")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      let has_content = ["pending", "confirmed", "no appointment", "patient", "date", "time"].some(k => src.includes(k))
+      assert.ok(has_content, "No appointment-related content found")
     },
   });
 
@@ -2105,16 +2105,16 @@ function registerSuites(runner) {
     expected: "No 404",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist/appointments")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        assert.ok(!src.slice(0, 200).includes("404"))
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist/appointments")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      assert.ok(!src.slice(0, 200).includes("404"))
     },
   });
 
@@ -2128,15 +2128,15 @@ function registerSuites(runner) {
     expected: "Settings page content visible",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/settings")
-        await driver.sleep(1.5 * 1000)
-        assert.ok((await driver.getCurrentUrl()).toLowerCase().includes("settings") || (await driver.getPageSource()).toLowerCase().includes("settings"), "Settings page not reached")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/settings")
+      await driver.sleep(1.5 * 1000)
+      assert.ok((await driver.getCurrentUrl()).toLowerCase().includes("settings") || (await driver.getPageSource()).toLowerCase().includes("settings"), "Settings page not reached")
     },
   });
 
@@ -2150,16 +2150,16 @@ function registerSuites(runner) {
     expected: "Heading found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/settings")
-        await driver.sleep(1.5 * 1000)
-        let headings = await driver.findElements(By.css("h1, h2, h3"))
-        assert.ok(headings.length >= 1)
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/settings")
+      await driver.sleep(1.5 * 1000)
+      let headings = await driver.findElements(By.css("h1, h2, h3"))
+      assert.ok(headings.length >= 1)
     },
   });
 
@@ -2173,17 +2173,17 @@ function registerSuites(runner) {
     expected: "Settings content found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/settings")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        let has_settings = ["account", "email", "password", "notification", "theme", "profile"].some(k => src.includes(k))
-        assert.ok(has_settings, "No settings-related content found")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/settings")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      let has_settings = ["account", "email", "password", "notification", "theme", "profile"].some(k => src.includes(k))
+      assert.ok(has_settings, "No settings-related content found")
     },
   });
 
@@ -2197,16 +2197,16 @@ function registerSuites(runner) {
     expected: "No 404",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/settings")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        assert.ok(!src.slice(0, 200).includes("404"))
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/settings")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      assert.ok(!src.slice(0, 200).includes("404"))
     },
   });
 
@@ -2220,16 +2220,16 @@ function registerSuites(runner) {
     expected: "At least 1 form element found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "patient");
-        }
-        await navigate(driver, config, "/settings")
-        await driver.sleep(1.5 * 1000)
-        let inputs = await driver.findElements(By.css("input, select, textarea"))
-        assert.ok(inputs.length >= 1, "No form inputs on settings page")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/therapist") || !(current_url.includes("/patient") || current_url.includes("/settings"))) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "patient");
+      }
+      await navigate(driver, config, "/settings")
+      await driver.sleep(1.5 * 1000)
+      let inputs = await driver.findElements(By.css("input, select, textarea"))
+      assert.ok(inputs.length >= 1, "No form inputs on settings page")
     },
   });
 
@@ -2243,15 +2243,15 @@ function registerSuites(runner) {
     expected: "URL is /login",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        await driver.sleep(0.5 * 1000)
-        let links = await driver.findElements(By.css("a[href*='/login']"))
+      await navigate(driver, config, "/")
+      await driver.sleep(0.5 * 1000)
+      let links = await driver.findElements(By.css("a[href*='/login']"))
       // Filter out any links that are sub-paths of /login (e.g. /login?role=...)
-        const login_links = []; for (const l of links) { const href = await l.getAttribute('href'); if (href && href.replace(/\/$/, '').endsWith('/login')) { login_links.push(l); } }
-        assert.ok(login_links.length >= 1, "No clean /login link found.")
-        await login_links[0].click()
-        await driver.sleep(1 * 1000)
-        assert.ok((await driver.getCurrentUrl()).includes("/login"))
+      const login_links = []; for (const l of links) { const href = await l.getAttribute('href'); if (href && href.replace(/\/$/, '').endsWith('/login')) { login_links.push(l); } }
+      assert.ok(login_links.length >= 1, "No clean /login link found.")
+      await login_links[0].click()
+      await driver.sleep(1 * 1000)
+      assert.ok((await driver.getCurrentUrl()).includes("/login"))
     },
   });
 
@@ -2265,12 +2265,12 @@ function registerSuites(runner) {
     expected: "URL is BASE_URL /",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
       // basePath-aware root link matching multiple variations
-        await clickLink(driver, "a[href='/'], a[href='/fluentvoice-frontend'], a[href='/fluentvoice-frontend/']")
-        await driver.sleep(1 * 1000)
-        assert.equal((await driver.getCurrentUrl()), `${config.baseUrl}/` || (await driver.getCurrentUrl()) == config.baseUrl)
+      await clickLink(driver, "a[href='/'], a[href='/fluentvoice-frontend'], a[href='/fluentvoice-frontend/']")
+      await driver.sleep(1 * 1000)
+      assert.equal((await driver.getCurrentUrl()), `${config.baseUrl}/` || (await driver.getCurrentUrl()) == config.baseUrl)
     },
   });
 
@@ -2284,12 +2284,12 @@ function registerSuites(runner) {
     expected: "Body is visible, no crash",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await driver.manage().window().setSize(375, 812)  // iPhone SE
-        await navigate(driver, config, "/")
-        await driver.sleep(1 * 1000)
-        let body = await driver.findElement(By.tagName("body"))
-        assert.ok(await body.isDisplayed())
-        await driver.manage().window().maximize()
+      await driver.manage().window().setSize(375, 812)  // iPhone SE
+      await navigate(driver, config, "/")
+      await driver.sleep(1 * 1000)
+      let body = await driver.findElement(By.tagName("body"))
+      assert.ok(await body.isDisplayed())
+      await driver.manage().window().maximize()
     },
   });
 
@@ -2303,11 +2303,11 @@ function registerSuites(runner) {
     expected: "Body is visible",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await driver.manage().window().setSize(768, 1024)  // tablet
-        await navigate(driver, config, "/")
-        await driver.sleep(1 * 1000)
-        assert.ok(await driver.findElement(By.tagName("body")).isDisplayed())
-        await driver.manage().window().maximize()
+      await driver.manage().window().setSize(768, 1024)  // tablet
+      await navigate(driver, config, "/")
+      await driver.sleep(1 * 1000)
+      assert.ok(await driver.findElement(By.tagName("body")).isDisplayed())
+      await driver.manage().window().maximize()
     },
   });
 
@@ -2321,12 +2321,12 @@ function registerSuites(runner) {
     expected: "404 page shown",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/nonexistent-page-xyz")
-        await driver.sleep(1 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
+      await navigate(driver, config, "/nonexistent-page-xyz")
+      await driver.sleep(1 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
       // Next.js typically shows 404 page
-        let has_404 = src.includes("404") || src.includes("not found")
-        return `404 page shown for unknown route: ${has_404}`
+      let has_404 = src.includes("404") || src.includes("not found")
+      return `404 page shown for unknown route: ${has_404}`
     },
   });
 
@@ -2340,11 +2340,11 @@ function registerSuites(runner) {
     expected: "Page renders after back navigation",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        await driver.executeScript("window.history.back()")
-        await driver.sleep(1 * 1000)
-        assert.ok(await driver.findElement(By.tagName("body")).isDisplayed())
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      await driver.executeScript("window.history.back()")
+      await driver.sleep(1 * 1000)
+      assert.ok(await driver.findElement(By.tagName("body")).isDisplayed())
     },
   });
 
@@ -2358,11 +2358,11 @@ function registerSuites(runner) {
     expected: "URL contains /login",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        await driver.sleep(0.5 * 1000)
-        await clickLink(driver, "a[href*='login?role=therapist'], a[href*='login/?role=therapist'], a[href*='login'][href*='role=therapist']")
-        await driver.sleep(1 * 1000)
-        assert.ok((await driver.getCurrentUrl()).includes("/login"))
+      await navigate(driver, config, "/")
+      await driver.sleep(0.5 * 1000)
+      await clickLink(driver, "a[href*='login?role=therapist'], a[href*='login/?role=therapist'], a[href*='login'][href*='role=therapist']")
+      await driver.sleep(1 * 1000)
+      assert.ok((await driver.getCurrentUrl()).includes("/login"))
     },
   });
 
@@ -2376,12 +2376,12 @@ function registerSuites(runner) {
     expected: "At least 3 footer links found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        await driver.sleep(0.5 * 1000)
-        let footer = await driver.findElement(By.tagName("footer"))
+      await navigate(driver, config, "/")
+      await driver.sleep(0.5 * 1000)
+      let footer = await driver.findElement(By.tagName("footer"))
       // Footer links  — Privacy, Terms, Contact
-        let footer_links = await footer.findElements(By.tagName("a"))
-        assert.ok(footer_links.length >= 3, `Expected ≥3 footer links, got ${footer_links.length}`)
+      let footer_links = await footer.findElements(By.tagName("a"))
+      assert.ok(footer_links.length >= 3, `Expected ≥3 footer links, got ${footer_links.length}`)
     },
   });
 
@@ -2395,10 +2395,10 @@ function registerSuites(runner) {
     expected: "Exactly 1 H1 found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        await driver.sleep(0.5 * 1000)
-        let h1s = await driver.findElements(By.tagName("h1"))
-        assert.equal(h1s.length, 1, `Expected exactly 1 H1, found ${h1s.length}`)
+      await navigate(driver, config, "/")
+      await driver.sleep(0.5 * 1000)
+      let h1s = await driver.findElements(By.tagName("h1"))
+      assert.equal(h1s.length, 1, `Expected exactly 1 H1, found ${h1s.length}`)
     },
   });
 
@@ -2412,10 +2412,10 @@ function registerSuites(runner) {
     expected: "At least 1 H1 found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        let h1s = await driver.findElements(By.tagName("h1"))
-        assert.ok(h1s.length >= 1, `Expected ≥1 H1 on login, found ${h1s.length}`)
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      let h1s = await driver.findElements(By.tagName("h1"))
+      assert.ok(h1s.length >= 1, `Expected ≥1 H1 on login, found ${h1s.length}`)
     },
   });
 
@@ -2429,10 +2429,10 @@ function registerSuites(runner) {
     expected: "At least 2 label elements found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        let labels = await driver.findElements(By.css("label"))
-        assert.ok(labels.length >= 2, `Expected ≥2 label elements, got ${labels.length}`)
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      let labels = await driver.findElements(By.css("label"))
+      assert.ok(labels.length >= 2, `Expected ≥2 label elements, got ${labels.length}`)
     },
   });
 
@@ -2446,10 +2446,10 @@ function registerSuites(runner) {
     expected: "At least 1 button with aria-label found",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        let toggle_btns = await driver.findElements(By.css("button[aria-label]"))
-        assert.ok(toggle_btns.length >= 1, "No aria-label buttons on login")
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      let toggle_btns = await driver.findElements(By.css("button[aria-label]"))
+      assert.ok(toggle_btns.length >= 1, "No aria-label buttons on login")
     },
   });
 
@@ -2463,10 +2463,10 @@ function registerSuites(runner) {
     expected: "lang attribute is non-empty",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        await driver.sleep(0.5 * 1000)
-        let lang = await driver.findElement(By.tagName("html")).getAttribute("lang")
-        assert.ok(lang && lang.length >= 2, `HTML lang attribute missing || empty: '${lang}'`)
+      await navigate(driver, config, "/")
+      await driver.sleep(0.5 * 1000)
+      let lang = await driver.findElement(By.tagName("html")).getAttribute("lang")
+      assert.ok(lang && lang.length >= 2, `HTML lang attribute missing || empty: '${lang}'`)
     },
   });
 
@@ -2480,11 +2480,11 @@ function registerSuites(runner) {
     expected: "All images have alt attributes",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        await driver.sleep(0.5 * 1000)
-        let imgs = await driver.findElements(By.tagName("img"))
-        const no_alt = []; for (const img of imgs) { if (!(await img.getAttribute('alt'))) { no_alt.push(img); } }
-        assert.equal(no_alt.length, 0, `${no_alt.length} images missing alt attribute`)
+      await navigate(driver, config, "/")
+      await driver.sleep(0.5 * 1000)
+      let imgs = await driver.findElements(By.tagName("img"))
+      const no_alt = []; for (const img of imgs) { if (!(await img.getAttribute('alt'))) { no_alt.push(img); } }
+      assert.equal(no_alt.length, 0, `${no_alt.length} images missing alt attribute`)
     },
   });
 
@@ -2498,14 +2498,14 @@ function registerSuites(runner) {
     expected: "Focus moves to an interactive element",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        await driver.sleep(0.5 * 1000)
+      await navigate(driver, config, "/")
+      await driver.sleep(0.5 * 1000)
       // Tab through the page
-        let body = await driver.findElement(By.tagName("body"))
-        await body.sendKeys(Key.TAB)
-        await driver.sleep(0.2 * 1000)
-        let active = await driver.switchTo().activeElement()
-        assert.ok(["a", "button", "input", "select", "textarea"].includes(await active.getTagName()),             `Tab focus landed on: ${await active.getTagName()}`)
+      let body = await driver.findElement(By.tagName("body"))
+      await body.sendKeys(Key.TAB)
+      await driver.sleep(0.2 * 1000)
+      let active = await driver.switchTo().activeElement()
+      assert.ok(["a", "button", "input", "select", "textarea"].includes(await active.getTagName()), `Tab focus landed on: ${await active.getTagName()}`)
     },
   });
 
@@ -2519,13 +2519,13 @@ function registerSuites(runner) {
     expected: "Viewport meta contains 'width=device-width'",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
       // Check viewport meta
-        let meta_viewport = await driver.executeScript(
-            "return document.querySelector('meta[name=viewport]')?.content"
-        )
-        assert.ok(meta_viewport && meta_viewport.includes("width=device-width"), `Viewport meta missing || wrong: ${meta_viewport}`)
+      let meta_viewport = await driver.executeScript(
+        "return document.querySelector('meta[name=viewport]')?.content"
+      )
+      assert.ok(meta_viewport && meta_viewport.includes("width=device-width"), `Viewport meta missing || wrong: ${meta_viewport}`)
     },
   });
 
@@ -2539,12 +2539,12 @@ function registerSuites(runner) {
     expected: "Response is not HTTP 500",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/api/auth/login")
-        await driver.sleep(1 * 1000)
-        let src = (await driver.getPageSource())
+      await navigate(driver, config, "/api/auth/login")
+      await driver.sleep(1 * 1000)
+      let src = (await driver.getPageSource())
       // Should return JSON with error or 405 Method Not Allowed — not 500
-        assert.ok(!src.slice(0, 100).includes("500") || !src.includes("Internal Server Error"),             "API returned 500")
-        return `API /auth/login responded (!500): ${src.slice(0, 80)}`
+      assert.ok(!src.slice(0, 100).includes("500") || !src.includes("Internal Server Error"), "API returned 500")
+      return `API /auth/login responded (!500): ${src.slice(0, 80)}`
     },
   });
 
@@ -2558,12 +2558,12 @@ function registerSuites(runner) {
     expected: "Response is not HTTP 500",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/api/sessions")
-        await driver.sleep(1 * 1000)
-        let src = (await driver.getPageSource())
+      await navigate(driver, config, "/api/sessions")
+      await driver.sleep(1 * 1000)
+      let src = (await driver.getPageSource())
       // Without auth should return 401 or redirect — not crash
-        assert.ok(!src.slice(0, 100).includes("500"), "Sessions API returned 500")
-        return `API /sessions responded: ${src.slice(0, 80)}`
+      assert.ok(!src.slice(0, 100).includes("500"), "Sessions API returned 500")
+      return `API /sessions responded: ${src.slice(0, 80)}`
     },
   });
 
@@ -2577,11 +2577,11 @@ function registerSuites(runner) {
     expected: "Not 500",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/api/appointments")
-        await driver.sleep(1 * 1000)
-        let src = (await driver.getPageSource())
-        assert.ok(!src.slice(0, 100).includes("500"), "Appointments API returned 500")
-        return `API /appointments responded: ${src.slice(0, 80)}`
+      await navigate(driver, config, "/api/appointments")
+      await driver.sleep(1 * 1000)
+      let src = (await driver.getPageSource())
+      assert.ok(!src.slice(0, 100).includes("500"), "Appointments API returned 500")
+      return `API /appointments responded: ${src.slice(0, 80)}`
     },
   });
 
@@ -2595,24 +2595,24 @@ function registerSuites(runner) {
     expected: "No JS alert appears",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login");
-        await driver.sleep(500);
-        const email_input = await driver.findElement(By.css("input[type='email']"));
-        await email_input.sendKeys("<script>alert('xss')</script>");
-        const pw_input = await driver.findElement(By.css("input[type='password']"));
-        await pw_input.sendKeys("password123");
-        await (await driver.findElement(By.css("button.w-full"))).click();
-        await driver.sleep(1500);
-        try {
-            const alert = await driver.switchTo().alert();
-            await alert.dismiss();
-            throw new Error("XSS alert appeared — vulnerability!");
-        } catch (e) {
-            if (e.message.includes("XSS alert")) {
-                throw e;
-            }
-            // No alert = good
+      await navigate(driver, config, "/login");
+      await driver.sleep(500);
+      const email_input = await driver.findElement(By.css("input[type='email']"));
+      await email_input.sendKeys("<script>alert('xss')</script>");
+      const pw_input = await driver.findElement(By.css("input[type='password']"));
+      await pw_input.sendKeys("password123");
+      await (await driver.findElement(By.css("button.w-full"))).click();
+      await driver.sleep(1500);
+      try {
+        const alert = await driver.switchTo().alert();
+        await alert.dismiss();
+        throw new Error("XSS alert appeared — vulnerability!");
+      } catch (e) {
+        if (e.message.includes("XSS alert")) {
+          throw e;
         }
+        // No alert = good
+      }
     },
   });
 
@@ -2626,16 +2626,16 @@ function registerSuites(runner) {
     expected: "User is NOT redirected to dashboard",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        let email_input = await driver.findElement(By.css("input[type='email']"))
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      let email_input = await driver.findElement(By.css("input[type='email']"))
       // SQL injection attempt
-        await email_input.sendKeys("' OR '1'='1'; --")
-        await driver.findElement(By.css("input[type='password']")).sendKeys("anything")
-        await driver.findElement(By.css("button.w-full")).click()
-        await driver.sleep(2 * 1000)
+      await email_input.sendKeys("' OR '1'='1'; --")
+      await driver.findElement(By.css("input[type='password']")).sendKeys("anything")
+      await driver.findElement(By.css("button.w-full")).click()
+      await driver.sleep(2 * 1000)
       // Should NOT redirect to dashboard
-        assert.ok(!(await driver.getCurrentUrl()).includes("/patient") && !(await driver.getCurrentUrl()).includes("/therapist"), "SQL injection may have succeeded — security risk")
+      assert.ok(!(await driver.getCurrentUrl()).includes("/patient") && !(await driver.getCurrentUrl()).includes("/therapist"), "SQL injection may have succeeded — security risk")
     },
   });
 
@@ -2649,15 +2649,15 @@ function registerSuites(runner) {
     expected: "Page remains functional",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        let email_input = await driver.findElement(By.css("input[type='email']"))
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      let email_input = await driver.findElement(By.css("input[type='email']"))
       // Very long input
-        await email_input.sendKeys("a" * 1000 + "@test.com")
-        await driver.findElement(By.css("input[type='password']")).sendKeys("password123")
-        await driver.findElement(By.css("button.w-full")).click()
-        await driver.sleep(2 * 1000)
-        assert.ok(await driver.findElement(By.tagName("body")).isDisplayed(), "Page crashed on long input")
+      await email_input.sendKeys("a" * 1000 + "@test.com")
+      await driver.findElement(By.css("input[type='password']")).sendKeys("password123")
+      await driver.findElement(By.css("button.w-full")).click()
+      await driver.sleep(2 * 1000)
+      assert.ok(await driver.findElement(By.tagName("body")).isDisplayed(), "Page crashed on long input")
     },
   });
 
@@ -2671,13 +2671,13 @@ function registerSuites(runner) {
     expected: "URL remains /login",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
       // Empty submission
-        await driver.findElement(By.css("button.w-full")).click()
-        await driver.sleep(1 * 1000)
+      await driver.findElement(By.css("button.w-full")).click()
+      await driver.sleep(1 * 1000)
       // Should stay on login with error
-        assert.ok(!(await driver.getCurrentUrl()).includes((await driver.getCurrentUrl()).includes("/login") || "/patient"))
+      assert.ok(!(await driver.getCurrentUrl()).includes((await driver.getCurrentUrl()).includes("/login") || "/patient"))
     },
   });
 
@@ -2691,15 +2691,15 @@ function registerSuites(runner) {
     expected: "Page renders without crash",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/login")
-        await driver.sleep(0.5 * 1000)
-        let email_input = await driver.findElement(By.css("input[type='email']"))
-        await email_input.sendKeys("not-an-email")
-        await driver.findElement(By.css("input[type='password']")).sendKeys("password123")
-        await driver.findElement(By.css("button.w-full")).click()
-        await driver.sleep(1.5 * 1000)
+      await navigate(driver, config, "/login")
+      await driver.sleep(0.5 * 1000)
+      let email_input = await driver.findElement(By.css("input[type='email']"))
+      await email_input.sendKeys("not-an-email")
+      await driver.findElement(By.css("input[type='password']")).sendKeys("password123")
+      await driver.findElement(By.css("button.w-full")).click()
+      await driver.sleep(1.5 * 1000)
       // Page should not 500 crash
-        assert.ok(await driver.findElement(By.tagName("body")).isDisplayed())
+      assert.ok(await driver.findElement(By.tagName("body")).isDisplayed())
     },
   });
 
@@ -2714,11 +2714,11 @@ function registerSuites(runner) {
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
       // Direct access to a therapist patient detail page without auth
-        await navigate(driver, config, "/")
-        await driver.manage().deleteAllCookies()
-        await driver.executeScript("await localStorage.clear();")
-        await navigate(driver, config, "/therapist/patient-details?id=some-patient-id")
-        await urlContains(driver, "/login", 8 * 1000)
+      await navigate(driver, config, "/")
+      await driver.manage().deleteAllCookies()
+      await driver.executeScript("await localStorage.clear();")
+      await navigate(driver, config, "/therapist/patient-details?id=some-patient-id")
+      await urlContains(driver, "/login", 8 * 1000)
     },
   });
 
@@ -2732,11 +2732,11 @@ function registerSuites(runner) {
     expected: "Redirected to /login",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        await navigate(driver, config, "/")
-        await driver.manage().deleteAllCookies()
-        await driver.executeScript("await localStorage.clear();")
-        await navigate(driver, config, "/settings")
-        await urlContains(driver, "/login", 8 * 1000)
+      await navigate(driver, config, "/")
+      await driver.manage().deleteAllCookies()
+      await driver.executeScript("await localStorage.clear();")
+      await navigate(driver, config, "/settings")
+      await urlContains(driver, "/login", 8 * 1000)
     },
   });
 
@@ -2750,15 +2750,15 @@ function registerSuites(runner) {
     expected: "Profile content visible",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist/profile")
-        await driver.sleep(1.5 * 1000)
-        assert.ok((await driver.getPageSource()).toLowerCase().includes("profile"))
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist/profile")
+      await driver.sleep(1.5 * 1000)
+      assert.ok((await driver.getPageSource()).toLowerCase().includes("profile"))
     },
   });
 
@@ -2772,16 +2772,16 @@ function registerSuites(runner) {
     expected: "Heading present",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist/profile")
-        await driver.sleep(1.5 * 1000)
-        let headings = await driver.findElements(By.css("h1, h2, h3"))
-        assert.ok(headings.length >= 1)
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist/profile")
+      await driver.sleep(1.5 * 1000)
+      let headings = await driver.findElements(By.css("h1, h2, h3"))
+      assert.ok(headings.length >= 1)
     },
   });
 
@@ -2795,16 +2795,16 @@ function registerSuites(runner) {
     expected: "No 404",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist/profile")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        assert.ok(!src.slice(0, 200).includes("404"))
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist/profile")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      assert.ok(!src.slice(0, 200).includes("404"))
     },
   });
 
@@ -2818,17 +2818,17 @@ function registerSuites(runner) {
     expected: "Profile info keywords present",
     suites: ["full"],
     async run({ driver, config, recordPerformance, recordAccessibility }) {
-        const current_url = await driver.getCurrentUrl();
-        if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
-            await driver.manage().deleteAllCookies();
-            await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
-            await login(driver, config, "therapist");
-        }
-        await navigate(driver, config, "/therapist/profile")
-        await driver.sleep(1.5 * 1000)
-        let src = (await driver.getPageSource()).toLowerCase()
-        let has_info = ["name", "email", "specialization", "license", "profile"].some(k => src.includes(k))
-        assert.ok(has_info, "No profile info keywords found")
+      const current_url = await driver.getCurrentUrl();
+      if (current_url.includes("/login") || current_url.includes("/patient") || current_url.includes("/settings") || !current_url.includes("/therapist")) {
+        await driver.manage().deleteAllCookies();
+        await driver.executeScript("localStorage.clear(); sessionStorage.clear();");
+        await login(driver, config, "therapist");
+      }
+      await navigate(driver, config, "/therapist/profile")
+      await driver.sleep(1.5 * 1000)
+      let src = (await driver.getPageSource()).toLowerCase()
+      let has_info = ["name", "email", "specialization", "license", "profile"].some(k => src.includes(k))
+      assert.ok(has_info, "No profile info keywords found")
     },
   });
 
@@ -2978,7 +2978,7 @@ function registerSuites(runner) {
       count: 106,
       startId: 995,
       expected: "E2E journey completed without errors",
-      steps: ["1. Run unified session workflow\\n2. Verify success status"],
+      steps: ["1. Run unified session workflow\n2. Verify success status"],
       run: async ({ driver, config }) => {
         const title = await driver.getTitle();
         assert.ok(title.length > 0);
