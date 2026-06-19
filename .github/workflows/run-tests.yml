@@ -85,6 +85,20 @@ jobs:
           cd selenium-tests
           npm ci
 
+      - name: Install Node.js dependencies (backend)
+        run: |
+          cd "../Fluentvoice backend"
+          npm ci --legacy-peer-deps
+
+      - name: Build and start Express backend
+        run: |
+          cd "../Fluentvoice backend"
+          npm run build
+          npm run db:setup
+          npm run db:seed
+          JWT_SECRET=f746d001e4b1a6a1b8eb3d458aa964de6ccc29254140dbb5a487263282f73841 PORT=5001 npm start &
+          sleep 4
+
       - name: Start preview server
         run: |
           node selenium-tests/scripts/serve.js &
