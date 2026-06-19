@@ -1,0 +1,124 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ── Design tokens ─────────────────────────────────────────────────────────── */
+:root {
+  /* Brand */
+  --color-navy:        #1B2B5E;
+  --color-navy-deep:   #0D1B3E;
+  --color-navy-light:  #2D44A0;
+  --color-navy-dim:    rgba(27,43,94,0.08);
+  --color-gold:        #C9A84C;
+  --color-gold-light:  #E8C96A;
+  --color-gold-dim:    rgba(201,168,76,0.12);
+
+  /* Surfaces */
+  --color-bg:          #E9EFF9;
+  --color-surface:     #FFFFFF;
+  --color-surface-2:   #F6F9FF;
+  --color-border:      #C8D3E8;
+  --color-muted:       #DAE3F2;
+
+  /* Text */
+  --color-text:        #0F172A;
+  --color-text-2:      #374151;
+  --color-text-3:      #64748B;
+  --color-text-4:      #9CA3AF;
+
+  /* Semantic */
+  --color-green:       #10B981;
+  --color-amber:       #F59E0B;
+  --color-red:         #EF4444;
+  --color-indigo:      #6366F1;
+  --color-purple:      #8B5CF6;
+  --color-pink:        #EC4899;
+  --color-orange:      #F97316;
+
+  /* Shadows — hairline ring + minimal blur for crisp, defined edges */
+  --shadow-sm:  0 0 0 1px rgba(27,43,94,0.08), 0 1px 4px  rgba(27,43,94,0.08);
+  --shadow-md:  0 0 0 1px rgba(27,43,94,0.09), 0 4px 16px rgba(27,43,94,0.10);
+  --shadow-lg:  0 0 0 1px rgba(27,43,94,0.10), 0 10px 32px rgba(27,43,94,0.16);
+  --shadow-xl:  0 0 0 1px rgba(27,43,94,0.12), 0 20px 52px rgba(27,43,94,0.22);
+
+  /* shadcn compat */
+  --background:         var(--color-bg);
+  --foreground:         var(--color-text);
+  --card:               var(--color-surface);
+  --card-foreground:    var(--color-text);
+  --primary:            var(--color-navy);
+  --primary-foreground: #FFFFFF;
+  --secondary:          var(--color-muted);
+  --secondary-foreground: var(--color-navy);
+  --muted:              var(--color-muted);
+  --muted-foreground:   var(--color-text-3);
+  --accent:             var(--color-gold);
+  --accent-foreground:  var(--color-navy);
+  --border:             var(--color-border);
+  --input:              var(--color-border);
+  --ring:               var(--color-navy);
+  --destructive:        var(--color-red);
+  --radius:             0.75rem;
+
+  /* Typography */
+  --font-display: var(--font-display);
+  --font-body:    var(--font-body);
+}
+
+@theme inline {
+  --color-background:        var(--background);
+  --color-foreground:        var(--foreground);
+  --color-card:              var(--card);
+  --color-card-foreground:   var(--card-foreground);
+  --color-primary:           var(--primary);
+  --color-primary-foreground:var(--primary-foreground);
+  --color-secondary:         var(--secondary);
+  --color-secondary-foreground:var(--secondary-foreground);
+  --color-muted:             var(--muted);
+  --color-muted-foreground:  var(--muted-foreground);
+  --color-accent:            var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border:            var(--border);
+  --color-input:             var(--input);
+  --color-ring:              var(--ring);
+  --color-destructive:       var(--destructive);
+  --font-sans:               var(--font-body);
+  --radius-sm:   calc(var(--radius) * 0.6);
+  --radius-md:   calc(var(--radius) * 0.8);
+  --radius-lg:   var(--radius);
+  --radius-xl:   calc(var(--radius) * 1.4);
+  --radius-2xl:  calc(var(--radius) * 1.8);
+  --radius-3xl:  calc(var(--radius) * 2.5);
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  html, body { overflow-x: clip; }
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body), -apple-system, BlinkMacSystemFont, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display), var(--font-body), sans-serif;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1, "liga" 1;
+  }
+  h1 { letter-spacing: -0.025em; }
+  h2 { letter-spacing: -0.018em; }
+  h3 { letter-spacing: -0.012em; }
+}
+
+/* Tabular nums on all metric displays */
+.tabnum { font-variant-numeric: tabular-nums; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(27,43,94,0.3); }

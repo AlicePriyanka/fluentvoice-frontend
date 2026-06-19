@@ -1,0 +1,82 @@
+name: E2E Test Suite
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Chrome / ChromeDriver ───────────────────────────────────────────────
+      - name: Install Chrome
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y google-chrome-stable
+          google-chrome --version
+
+      # ── Python test suite ──────────────────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install selenium openpyxl webdriver-manager
+
+      - name: Run Python E2E Test Suite
+        env:
+          BASE_URL: https://alicepriyanka.github.io/fluentvoice-frontend
+          DISPLAY: ":99"
+        run: |
+          Xvfb :99 -screen 0 1920x1080x24 &
+          python tests/e2e_fluentvoice_tests.py
+
+      - name: Upload Python Test Report Excel
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Python-E2E-Test-Report
+          path: E2E_Test_Report_FluentVoice_*.xlsx
+
+      # ── Node.js test suite ─────────────────────────────────────────────────
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Node.js dependencies
+        run: |
+          cd selenium-tests
+          npm ci
+
+      - name: Run Node.js Selenium Test Suite
+        env:
+          BASE_URL: https://alicepriyanka.github.io/fluentvoice-frontend
+          HEADLESS: "true"
+          PATIENT_EMAIL: testpatient@fluentvoice.io
+          PATIENT_PASSWORD: TestPass123
+          THERAPIST_EMAIL: testtherapist@fluentvoice.io
+          THERAPIST_PASSWORD: TestPass123
+          DEFAULT_TIMEOUT_MS: "20000"
+          PAGE_LOAD_THRESHOLD_MS: "8000"
+          ALLOW_DATA_MUTATION: "false"
+          FAIL_ON_SERIOUS_A11Y: "false"
+          SECURITY_HEADERS_STRICT: "false"
+        run: |
+          cd selenium-tests
+          npm test
+
+      - name: Upload Node.js Test Report Excel
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Nodejs-Selenium-Test-Report
+          path: selenium-tests/artifacts/reports/FluentVoice_Selenium_Report_*.xlsx
