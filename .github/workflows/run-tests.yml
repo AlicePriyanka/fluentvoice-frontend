@@ -7,6 +7,15 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   python-tests:
     runs-on: ubuntu-latest
@@ -60,15 +69,29 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install Node.js dependencies
+      - name: Install Node.js dependencies (app)
+        run: npm ci
+
+      - name: Build Next.js application
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Install Node.js dependencies (tests)
         run: |
           cd selenium-tests
           npm ci
 
+      - name: Start preview server
+        run: |
+          node selenium-tests/scripts/serve.js &
+          sleep 4
+          curl -s http://127.0.0.1:5173/fluentvoice-frontend/ || echo "Waiting..."
+
       - name: Run Node.js Selenium Test Suite
         continue-on-error: true
         env:
-          BASE_URL: https://alicepriyanka.github.io/fluentvoice-frontend
+          BASE_URL: http://127.0.0.1:5173/fluentvoice-frontend
           HEADLESS: "true"
           PATIENT_EMAIL: testpatient@fluentvoice.io
           PATIENT_PASSWORD: TestPass123
@@ -83,12 +106,36 @@ jobs:
           cd selenium-tests
           npm test || true
 
+      - name: Inject E2E reports to Next.js build
+        if: always()
+        run: |
+          mkdir -p out/reports/latest
+          mkdir -p out/reports/history/build-${{ github.run_number }}
+          cp selenium-tests/artifacts/reports/execution-report.html out/reports/latest/execution-report.html || true
+          cp selenium-tests/artifacts/reports/execution-report.html out/reports/history/build-${{ github.run_number }}/execution-report.html || true
+          cp selenium-tests/artifacts/reports/selenium-report.xlsx out/reports/latest/selenium-report.xlsx || true
+          cp selenium-tests/artifacts/reports/selenium-report.xlsx out/reports/history/build-${{ github.run_number }}/selenium-report.xlsx || true
+
       - name: Upload Node.js Test Report Excel
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: Nodejs-Selenium-Test-Report
           path: "Fluentvoice frontend/selenium-tests/artifacts/reports/FluentVoice_Selenium_Report_*.xlsx"
+
+      - name: Setup Pages
+        if: always()
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact
+        if: always()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "Fluentvoice frontend/out"
+
+      - name: Deploy to GitHub Pages
+        if: always()
+        uses: actions/deploy-pages@v4
 
   security-review:
     runs-on: ubuntu-latest
@@ -113,6 +160,11 @@ jobs:
         run: |
           cd selenium-tests
           node scripts/generateWebSecuritySuite.js >> $GITHUB_STEP_SUMMARY
+          # Enforce Zero-Critical Policy
+          if grep -q "| \*\*Critical Vulnerabilities\*\* | [1-9]" $GITHUB_STEP_SUMMARY; then
+            echo "Security Policy Gate Failed: Critical vulnerabilities found!"
+            exit 1
+          fi
 
       - name: Upload Security Report Excel
         uses: actions/upload-artifact@v4

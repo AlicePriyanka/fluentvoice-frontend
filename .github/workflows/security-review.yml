@@ -1,0 +1,48 @@
+name: Backend Security Review
+
+on:
+  push:
+    paths:
+      - "Fluentvoice backend/**"
+  pull_request:
+    paths:
+      - "Fluentvoice backend/**"
+  workflow_dispatch:
+
+jobs:
+  backend-security:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "Fluentvoice backend"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies (tests node_modules for exceljs)
+        run: |
+          cd "../Fluentvoice frontend/selenium-tests"
+          npm ci
+
+      - name: Run Backend Security Review
+        env:
+          NODE_PATH: "../Fluentvoice frontend/selenium-tests/node_modules"
+        run: |
+          node scripts/generateSecuritySuite.js >> $GITHUB_STEP_SUMMARY
+          # Enforce Zero-Critical Policy
+          if grep -q "| \*\*Critical Vulnerabilities\*\* | [1-9]" $GITHUB_STEP_SUMMARY; then
+            echo "Security Policy Gate Failed: Critical vulnerabilities found!"
+            exit 1
+          fi
+
+      - name: Upload Security Report Excel
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Backend-Security-Findings-Report
+          path: "Fluentvoice backend/artifacts/findings.xlsx"
