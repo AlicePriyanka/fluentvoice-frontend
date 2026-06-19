@@ -1,0 +1,31 @@
+name: API Load Testing
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  k6-load-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Run k6 Load Test
+        env:
+          BACKEND_URL: https://fluentvoice-backend-1.onrender.com
+        run: |
+          k6 run --summary-export=summary.json "Fluentvoice backend/scripts/load-test.js"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Parse k6 summary results
+        run: |
+          node "Fluentvoice backend/scripts/parseK6Summary.js" >> $GITHUB_STEP_SUMMARY
