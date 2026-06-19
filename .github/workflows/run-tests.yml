@@ -36,7 +36,7 @@ jobs:
 
       - name: Run Python E2E Test Suite
         env:
-          BASE_URL: https://alicepriyanka.github.io/fluentvoice-frontend
+          BASE_URL: https://alicepriyanka.github.io/fluentvoice
           DISPLAY: ":99"
         run: |
           Xvfb :99 -screen 0 1920x1080x24 &
@@ -86,12 +86,12 @@ jobs:
         run: |
           node selenium-tests/scripts/serve.js &
           sleep 4
-          curl -s http://127.0.0.1:5173/fluentvoice-frontend/ || echo "Waiting..."
+          curl -s http://127.0.0.1:5173/fluentvoice/ || echo "Waiting..."
 
       - name: Run Node.js Selenium Test Suite
         continue-on-error: true
         env:
-          BASE_URL: http://127.0.0.1:5173/fluentvoice-frontend
+          BASE_URL: http://127.0.0.1:5173/fluentvoice
           HEADLESS: "true"
           PATIENT_EMAIL: testpatient@fluentvoice.io
           PATIENT_PASSWORD: TestPass123

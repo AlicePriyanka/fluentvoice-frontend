@@ -491,8 +491,8 @@ function registerSuites(runner) {
     async run({ driver, config, recordPerformance, recordAccessibility }) {
       await navigate(driver, config, "/login")
       await driver.sleep(0.5 * 1000)
-      // Match exact basePath-aware home href, e.g. /fluentvoice-frontend/ or /
-      let back_link = await visible(driver, By.css("a[href='/'], a[href='/fluentvoice-frontend'], a[href='/fluentvoice-frontend/']"), config.timeoutMs)
+      // Match exact basePath-aware home href, e.g. /fluentvoice/ or /
+      let back_link = await visible(driver, By.css("a[href='/'], a[href='/fluentvoice'], a[href='/fluentvoice/']"), config.timeoutMs)
       assert.ok(await back_link.isDisplayed(), "Back to home link not visible")
     },
   });
@@ -2268,7 +2268,7 @@ function registerSuites(runner) {
       await navigate(driver, config, "/login")
       await driver.sleep(0.5 * 1000)
       // basePath-aware root link matching multiple variations
-      await clickLink(driver, "a[href='/'], a[href='/fluentvoice-frontend'], a[href='/fluentvoice-frontend/']")
+      await clickLink(driver, "a[href='/'], a[href='/fluentvoice'], a[href='/fluentvoice/']")
       await driver.sleep(1 * 1000)
       assert.equal((await driver.getCurrentUrl()), `${config.baseUrl}/` || (await driver.getCurrentUrl()) == config.baseUrl)
     },

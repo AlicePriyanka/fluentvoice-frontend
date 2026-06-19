@@ -3,7 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const PORT = 5173;
-const BASE_PATH = "/fluentvoice-frontend";
+const BASE_PATH = "/fluentvoice";
 const OUT_DIR = path.resolve(__dirname, "../../out");
 
 const mimeTypes = {

@@ -19,7 +19,7 @@ const libreBaskerville = Libre_Baskerville({
   display: "swap",
 });
 
-const basePath = process.env.NODE_ENV === "production" ? "/fluentvoice-frontend" : "";
+const basePath = process.env.NODE_ENV === "production" ? "/fluentvoice" : "";
 
 export const metadata: Metadata = {
   title: "FluentVoice — AI Fluency Analysis",

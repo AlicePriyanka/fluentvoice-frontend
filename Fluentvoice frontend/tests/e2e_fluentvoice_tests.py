@@ -48,15 +48,15 @@ from openpyxl.utils import get_column_letter
 # ──────────────────────────────────────────────────────────────────────────────
 from urllib.parse import urlparse as _urlparse
 
-BASE_URL        = os.environ.get("BASE_URL", "https://alicepriyanka.github.io/fluentvoice-frontend")
+BASE_URL        = os.environ.get("BASE_URL", "https://alicepriyanka.github.io/fluentvoice")
 DEFAULT_TIMEOUT = 10         # seconds
 HEADLESS        = True       # set True to run without a browser window
 SLOW_MO         = 0.3        # seconds between actions
 
 # Derive the basePath so CSS href selectors work on GitHub Pages
-# e.g. BASE_URL="https://...github.io/fluentvoice-frontend" → BASE_PATH="/fluentvoice-frontend"
+# e.g. BASE_URL="https://...github.io/fluentvoice" → BASE_PATH="/fluentvoice"
 _parsed   = _urlparse(BASE_URL)
-BASE_PATH = _parsed.path.rstrip("/")   # "/fluentvoice-frontend" or "" for local dev
+BASE_PATH = _parsed.path.rstrip("/")   # "/fluentvoice" or "" for local dev
 
 # Test credentials  — change to match your dev DB seeded users
 PATIENT_EMAIL    = "testpatient@fluentvoice.io"
@@ -535,8 +535,8 @@ def run_auth_tests(driver):
     def t(d):
         d.get(f"{BASE_URL}/login")
         sleep(0.5)
-        # Match exact basePath-aware home href, e.g. /fluentvoice-frontend/ or /
-        back_link = wait_clickable(d, By.CSS_SELECTOR, "a[href='/'], a[href='/fluentvoice-frontend'], a[href='/fluentvoice-frontend/']")
+        # Match exact basePath-aware home href, e.g. /fluentvoice/ or /
+        back_link = wait_clickable(d, By.CSS_SELECTOR, "a[href='/'], a[href='/fluentvoice'], a[href='/fluentvoice/']")
         assert back_link.is_displayed(), "Back to home link not visible"
     run_test(next_tc(), MOD, "Back to home link present",
              "'Back to home' link navigates to /",
@@ -1692,7 +1692,7 @@ def run_nav_tests(driver):
         d.get(f"{BASE_URL}/login")
         sleep(0.5)
         # basePath-aware root link matching multiple variations
-        click_link(d, "a[href='/'], a[href='/fluentvoice-frontend'], a[href='/fluentvoice-frontend/']")
+        click_link(d, "a[href='/'], a[href='/fluentvoice'], a[href='/fluentvoice/']")
         sleep(1)
         assert d.current_url == f"{BASE_URL}/" or d.current_url == BASE_URL
     run_test(next_tc(), MOD, "Back to home link works",

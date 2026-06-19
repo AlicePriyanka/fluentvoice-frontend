@@ -5,7 +5,7 @@ import { useEffect } from "react";
 export function SwRegister() {
   useEffect(() => {
     if ("serviceWorker" in navigator) {
-      const basePath = process.env.NODE_ENV === "production" ? "/fluentvoice-frontend" : "";
+      const basePath = process.env.NODE_ENV === "production" ? "/fluentvoice" : "";
       navigator.serviceWorker
         .register(`${basePath}/sw.js`, { scope: `${basePath}/` })
         .then((reg) => {
