@@ -18,7 +18,7 @@ jobs:
       - name: Run k6 Load Test
         continue-on-error: true
         env:
-          BACKEND_URL: https://fluentvoice-backend-1.onrender.com
+          BACKEND_URL: https://fluentvoice-backend-blhk.onrender.com
         run: |
           k6 run --summary-export=summary.json "Fluentvoice backend/scripts/load-test.js" || true
 
