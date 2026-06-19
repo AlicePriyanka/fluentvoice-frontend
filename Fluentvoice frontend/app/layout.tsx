@@ -61,7 +61,7 @@ export default function RootLayout({
             window.fetch = function(input, init) {
               if (typeof input === 'string' && input.startsWith('/api/')) {
                 var isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                var backendUrl = isLocal ? 'http://localhost:5001' : 'https://fluentvoice-backend-1.onrender.com';
+                var backendUrl = isLocal ? 'http://localhost:5001' : 'https://fluentvoice-backend-blhk.onrender.com';
                 input = backendUrl + input;
                 if (!init) init = {};
                 init.credentials = 'include';

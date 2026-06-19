@@ -2,7 +2,7 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 
 // Read dynamic target or fallback to Render production backend
-const BASE_URL = __ENV.BACKEND_URL || 'https://fluentvoice-backend-1.onrender.com';
+const BASE_URL = __ENV.BACKEND_URL || 'https://fluentvoice-backend-blhk.onrender.com';
 
 export const options = {
   vus: 100,
