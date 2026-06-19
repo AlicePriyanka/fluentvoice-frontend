@@ -20,12 +20,12 @@ function main() {
 
   // Extract Request Count & RPS
   const reqsMetric = metrics.http_reqs || {};
-  const totalRequests = reqsMetric.values ? reqsMetric.values.count : (reqsMetric.count || 0);
-  const rps = reqsMetric.values ? reqsMetric.values.rate : (reqsMetric.rate || 0);
+  const totalRequests = reqsMetric.values ? (reqsMetric.values.count || 0) : (reqsMetric.count || 0);
+  const rps = reqsMetric.values ? (reqsMetric.values.rate || 0) : (reqsMetric.rate || 0);
 
   // Extract Latency Metrics
   const durationMetric = metrics.http_req_duration || {};
-  const latencies = durationMetric.values || {};
+  const latencies = durationMetric.values || durationMetric || {};
   const avgLatency = latencies.avg || 0;
   const minLatency = latencies.min || 0;
   const maxLatency = latencies.max || 0;
@@ -34,13 +34,15 @@ function main() {
 
   // Extract Failure Rate
   const failedMetric = metrics.http_req_failed || {};
-  const failureRateRaw = failedMetric.values ? failedMetric.values.rate : (failedMetric.rate || 0);
+  const failureRateRaw = failedMetric.values 
+    ? (failedMetric.values.rate !== undefined ? failedMetric.values.rate : failedMetric.values.value || 0)
+    : (failedMetric.value !== undefined ? failedMetric.value : failedMetric.rate || 0);
   const failureRate = (failureRateRaw * 100).toFixed(2);
-  const totalFailures = failedMetric.values ? failedMetric.values.passes : (failedMetric.passes || 0);
+  const totalFailures = failedMetric.values ? (failedMetric.values.passes || 0) : (failedMetric.passes || 0);
 
   // Extract VUs
   const vusMetric = metrics.vus || {};
-  const maxVus = vusMetric.values ? vusMetric.values.max : (vusMetric.max || 100);
+  const maxVus = vusMetric.values ? (vusMetric.values.max || 100) : (vusMetric.max || 100);
 
   // Determine Threshold compliance
   const thresholdCompliant = (p95Latency < 30000 && failureRateRaw < 0.95) ? "🟢 PASSED" : "🔴 FAILED";

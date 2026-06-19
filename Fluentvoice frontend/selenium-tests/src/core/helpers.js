@@ -12,7 +12,17 @@ async function waitForPage(driver, timeoutMs) {
 }
 
 async function navigate(driver, config, route) {
-  await driver.get(`${config.baseUrl}${route}`);
+  let finalRoute = route;
+  if (finalRoute && finalRoute !== "/") {
+    const urlParts = finalRoute.split("?");
+    let pathPart = urlParts[0];
+    const queryPart = urlParts[1];
+    if (!pathPart.endsWith("/")) {
+      pathPart += "/";
+    }
+    finalRoute = queryPart ? `${pathPart}?${queryPart}` : pathPart;
+  }
+  await driver.get(`${config.baseUrl}${finalRoute}`);
   await waitForPage(driver, config.timeoutMs);
 }
 
