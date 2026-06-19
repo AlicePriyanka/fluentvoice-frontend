@@ -23,12 +23,12 @@ for i in {1..30}; do
   sleep 2
 done
 
-echo "Running WebDriverIO tests..."
+echo "Running standalone Appium tests..."
 exit_code=0
-node node_modules/@wdio/cli/bin/wdio.js run wdio.conf.js || exit_code=$?
+node run_local_tests.js || exit_code=$?
 
 if [ $exit_code -ne 0 ]; then
-  echo "WebDriverIO failed or exited early. Generating fallback report..."
+  echo "Tests failed or exited early. Generating fallback report..."
   node utils/generateFallbackReport.js
 fi
 

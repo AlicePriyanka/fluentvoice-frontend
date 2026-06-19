@@ -69,17 +69,23 @@ async function runTests() {
       port: 4723,
       path: "/",
       logLevel: "error",
-      capabilities: {
-        platformName: "Android",
-        "appium:deviceName":          DEVICE_NAME,
-        "appium:udid":                DEVICE_SERIAL,
-        "appium:platformVersion":     ANDROID_VER,
-        "appium:automationName":      "UiAutomator2",
-        "appium:app":                 APK_PATH,
-        "appium:autoGrantPermissions": true,
-        "appium:newCommandTimeout":   300,
-        "appium:noReset":             true
-      }
+      capabilities: (function() {
+        const isCI = process.env.CI === "true";
+        const caps = {
+          platformName: "Android",
+          "appium:deviceName":          isCI ? "Android Emulator" : DEVICE_NAME,
+          "appium:platformVersion":     isCI ? "9.0" : ANDROID_VER,
+          "appium:automationName":      "UiAutomator2",
+          "appium:app":                 APK_PATH,
+          "appium:autoGrantPermissions": true,
+          "appium:newCommandTimeout":   300,
+          "appium:noReset":             !isCI
+        };
+        if (!isCI) {
+          caps["appium:udid"] = DEVICE_SERIAL;
+        }
+        return caps;
+      })()
     });
     console.log(`${C.green}✔ Connected to Appium — app launched on ${DEVICE_NAME}${C.reset}\n`);
   } catch (err) {

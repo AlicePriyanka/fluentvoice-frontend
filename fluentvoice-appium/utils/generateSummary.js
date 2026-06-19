@@ -1,7 +1,9 @@
 const fs = require("fs");
 const path = require("path");
 
-const resultsFile = path.join(__dirname, "../.wdio-results.jsonl");
+const resultsFile = fs.existsSync(path.join(__dirname, "../.wdio-results.jsonl"))
+  ? path.join(__dirname, "../.wdio-results.jsonl")
+  : path.join(__dirname, "../artifacts/reports/results.jsonl");
 if (fs.existsSync(resultsFile)) {
   const lines = fs.readFileSync(resultsFile, "utf-8").trim().split("\n");
   const results = lines.map(line => JSON.parse(line));
