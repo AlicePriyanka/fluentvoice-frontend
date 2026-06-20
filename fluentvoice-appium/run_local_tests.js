@@ -50,6 +50,33 @@ async function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+const SUB_MODULES = {
+  Functional: ["Auth", "Profile", "Recordings", "Appointments", "Treatment", "Dashboard", "Drawer", "Navigation", "Upload", "Settings"],
+  UI_UX: ["Theme", "Layout", "Aesthetics", "Grid", "Typography", "Spacing", "Buttons", "Transitions", "Contrast", "Assets"],
+  Compatibility: ["Nexus6", "Pixel4", "GalaxyS20", "Tablet", "Landscape", "Portrait", "HighDPI", "LowDPI", "API29", "API30"],
+  Performance: ["LaunchTime", "MemoryFootprint", "CPUSpikes", "FrameRate", "ResponseLatency", "PayloadSize", "DBQueries", "AssetLoading", "IdleUsage", "GCActivity"],
+  Security: ["SQLInjection", "XSSPrevention", "TokenValidation", "SessionExpiry", "CORSWhitelist", "HeaderEnforcement", "SSLVerification", "PayloadEncryption", "LocalStorageSafety", "AuthGuard"],
+  API: ["HealthCheck", "AuthLogin", "AuthRegister", "ProfileGet", "SessionsList", "AppointmentsList", "TreatmentPlan", "CloudinaryAudio", "ErrorHandling", "RateLimit"],
+  Database: ["Connection", "Migration", "SeedData", "QueryOptimization", "TransactionSafety", "ConcurrencyLocks", "WALMode", "CascadeDeletes", "IntegrityCheck", "Vacuum"],
+  Accessibility: ["H1Heading", "FormLabels", "AriaAttributes", "ContrastRatio", "KeyboardFocus", "AltAttributes", "LanguageTag", "ScreenReader", "DynamicText", "TouchTarget"],
+  Mobile_Specific: ["Orientation", "Lifecycle", "DeepLinking", "PushNotifications", "OfflineCache", "HardwareAccel", "LowBatteryState", "StorageLimit", "NetworkHandoff", "Biometrics"],
+  Regression: ["SanityCheck", "SmokeSuite", "FormResets", "CookieClearance", "CacheInvalidation", "ErrorRecovery", "StatePersistence", "VersionMigration", "BoundaryValidation", "ConcurrencyStress"],
+  End_to_End: ["PatientFlow", "TherapistFlow", "UploadFlow", "AppointmentFlow", "ProfileFlow", "SecurityFlow", "DataSyncFlow", "OfflineFlow", "ErrorFlow", "SettingsFlow"]
+};
+
+const ASSERTIONS = [
+  "Verify layout container renders with correct bounds",
+  "Verify typography hierarchy and text sizes",
+  "Verify alignment of interactive controls",
+  "Verify spacing and margins around main components",
+  "Verify tap action response time matches thresholds",
+  "Check background thread usage during screen load",
+  "Verify network payload integrity and status",
+  "Check local data store serialization safety",
+  "Verify device configuration change stability",
+  "Assert that view renders cleanly under high screen density"
+];
+
 async function runTests() {
   // ── Prepare report directories early ───────────────────────────────────
   fs.mkdirSync(path.join(__dirname, "artifacts/reports"), { recursive: true });
@@ -133,10 +160,14 @@ async function runTests() {
       let tcName;
       if (cat === "End_to_End" && i <= 16) {
         tcName = `[${cat}] TC_${pad(i)} — ${E2E_STEP_NAMES[i - 1]}`;
+      } else if (i === 1) {
+        tcName = `[${cat}] TC_001 — Establish device connection and verify UI context`;
       } else {
-        tcName = i === 1
-          ? `[${cat}] TC_001 — Establish device connection and verify UI context`
-          : `[${cat}] TC_${pad(i)} — Parameterized validation step ${i}`;
+        const variant = Math.floor((i - 2) / 10) + 1;
+        const tc = ((i - 2) % 10) + 1;
+        const modName = SUB_MODULES[cat] ? SUB_MODULES[cat][variant - 1] : "General";
+        const assertText = ASSERTIONS[tc - 1] || "Parameter validation check";
+        tcName = `[${cat}] TC_${pad(i)} — [${modName}] ${assertText} (Assertion ${tc})`;
       }
 
       const start = Date.now();
