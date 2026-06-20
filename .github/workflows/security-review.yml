@@ -1,48 +1,126 @@
-name: Backend Security Review
+name: 🛡️ Backend Security Review
 
 on:
   push:
+    branches: ["main", "master"]
     paths:
       - "Fluentvoice backend/**"
+      - ".github/workflows/security-review.yml"
   pull_request:
-    paths:
-      - "Fluentvoice backend/**"
+    branches: ["main", "master"]
   workflow_dispatch:
 
+concurrency:
+  group: security-review-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  backend-security:
+  security-scan:
+    name: 🛡️ Security Discovery, SAST & Dependencies
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: "Fluentvoice backend"
+    timeout-minutes: 30
+
     steps:
-      - name: Checkout repository
+      # ── 1. Source ────────────────────────────────────────────────
+      - name: ⬇️  Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      # ── 2. Setup Environment ─────────────────────────────────────
+      - name: 🟢  Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "npm"
+          cache-dependency-path: Fluentvoice frontend/selenium-tests/package-lock.json
 
-      - name: Install dependencies (tests node_modules for exceljs)
-        run: |
-          cd "../Fluentvoice frontend/selenium-tests"
-          npm ci
+      - name: 📦  Install E2E dependencies (for exceljs)
+        working-directory: "Fluentvoice frontend/selenium-tests"
+        run: npm ci
 
-      - name: Run Backend Security Review
-        env:
-          NODE_PATH: "../Fluentvoice frontend/selenium-tests/node_modules"
+      # ── 3. Technology Detection & Security Run ───────────────────
+      - name: 🔍 Detect Backend Technology & Run Security Audit
         run: |
-          node scripts/generateSecuritySuite.js >> $GITHUB_STEP_SUMMARY
-          # Enforce Zero-Critical Policy
-          if grep -q "| \*\*Critical Vulnerabilities\*\* | [1-9]" $GITHUB_STEP_SUMMARY; then
-            echo "Security Policy Gate Failed: Critical vulnerabilities found!"
-            exit 1
+          echo "====================================================="
+          echo "🔍 AUTOMATIC BACKEND TECHNOLOGY DETECTION"
+          echo "====================================================="
+
+          if [ -f "Fluentvoice backend/requirements.txt" ]; then
+             echo "TECH=Python/Flask" >> "$GITHUB_ENV"
+          elif [ -f "Fluentvoice backend/package.json" ]; then
+             echo "TECH=Node.js" >> "$GITHUB_ENV"
+          else
+             echo "TECH=Generic" >> "$GITHUB_ENV"
           fi
 
-      - name: Upload Security Report Excel
-        uses: actions/upload-artifact@v4
+          # NODE_PATH makes Node resolve 'exceljs' from Fluentvoice frontend/selenium-tests/node_modules
+          # even though the script file lives in Fluentvoice backend/scripts/
+          NODE_PATH="${GITHUB_WORKSPACE}/Fluentvoice frontend/selenium-tests/node_modules" \
+            node "Fluentvoice backend/scripts/generateSecuritySuite.js"
+
+      # ── 4. Gather Security Artifacts ─────────────────────────────
+      - name: 📁 Gather Security Artifacts
         if: always()
+        run: |
+          mkdir -p "${{ github.workspace }}/Vulnerability_Test_Results"
+          SEC_SRC="Fluentvoice backend/artifacts"
+          [ -f "$SEC_SRC/findings.xlsx" ] && cp "$SEC_SRC/findings.xlsx" "${{ github.workspace }}/Vulnerability_Test_Results/"
+          [ -f "$SEC_SRC/security-review.md" ] && cp "$SEC_SRC/security-review.md" "${{ github.workspace }}/Vulnerability_Test_Results/"
+          [ -f "$SEC_SRC/dependency-report.md" ] && cp "$SEC_SRC/dependency-report.md" "${{ github.workspace }}/Vulnerability_Test_Results/"
+          [ -f "$SEC_SRC/executive-summary.md" ] && cp "$SEC_SRC/executive-summary.md" "${{ github.workspace }}/Vulnerability_Test_Results/"
+
+      # ── 5. Upload Security Artifacts ─────────────────────────────
+      - name: 📤  Upload Vulnerability Results
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: Backend-Security-Findings-Report
-          path: "Fluentvoice backend/artifacts/findings.xlsx"
+          name: FluentVoice-Backend-Security-Review-${{ github.run_number }}
+          path: Vulnerability_Test_Results/
+          retention-days: 30
+
+      # ── 6. Write GitHub Action Step Summary ──────────────────────
+      - name: 📝  Write Step Summary
+        if: always()
+        run: |
+          EXEC_FILE="${{ github.workspace }}/Vulnerability_Test_Results/executive-summary.md"
+          REV_FILE="${{ github.workspace }}/Vulnerability_Test_Results/security-review.md"
+          DEP_FILE="${{ github.workspace }}/Vulnerability_Test_Results/dependency-report.md"
+
+          if [ -f "$EXEC_FILE" ]; then
+            cat "$EXEC_FILE" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "---" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## ⚠️ Executive summary not generated — check previous step logs." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          if [ -f "$DEP_FILE" ]; then
+            cat "$DEP_FILE" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "---" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          if [ -f "$REV_FILE" ]; then
+            cat "$REV_FILE" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## ⚠️ Security review not generated — check previous step logs." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # ── 7. Fail if Critical vulnerabilities were found ───────────
+      - name: 🚨  Enforce Zero-Critical Policy
+        if: always()
+        run: |
+          EXEC_FILE="${{ github.workspace }}/Vulnerability_Test_Results/executive-summary.md"
+          if [ -f "$EXEC_FILE" ]; then
+            CRITICAL=$(grep -oP '🔴 Critical \| \*\*\K[0-9]+' "$EXEC_FILE" || echo "0")
+            echo "Critical findings detected: $CRITICAL"
+            if [ "$CRITICAL" -gt 0 ]; then
+              echo ""
+              echo "❌ BUILD FAILED: ${CRITICAL} Critical severity vulnerability/vulnerabilities found."
+              echo "   Resolve all Critical findings before merging to main."
+              exit 1
+            else
+              echo "✅ Zero Critical vulnerabilities — policy check passed."
+            fi
+          fi

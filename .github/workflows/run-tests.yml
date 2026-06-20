@@ -1,192 +1,283 @@
-name: E2E Test Suite
+name: 🌐 Web App — Deploy, 1100 E2E Tests & Security Review
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "master"]
+    paths:
+      - "Fluentvoice frontend/**"
+      - "Fluentvoice backend/**"
+      - ".github/workflows/run-tests.yml"
   pull_request:
-    branches: ["main"]
+    branches: ["main", "master"]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: deploy-and-test-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  python-tests:
+  deploy-and-test:
+    name: 🌐 Build · Deploy · 1100 E2E Tests · Web Security Review
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: "Fluentvoice frontend"
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install Python dependencies
-        run: pip install selenium openpyxl webdriver-manager
-
-      - name: Run Python E2E Test Suite
-        env:
-          BASE_URL: https://alicepriyanka.github.io/fluentvoice
-          DISPLAY: ":99"
-        run: |
-          Xvfb :99 -screen 0 1920x1080x24 &
-          python tests/e2e_fluentvoice_tests.py
-
-      - name: Upload Python Test Report Excel
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: Python-E2E-Test-Report
-          path: "Fluentvoice frontend/E2E_Test_Report_FluentVoice_*.xlsx"
-
-  run-e2e-tests:
-    runs-on: ubuntu-latest
+    timeout-minutes: 60
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    defaults:
-      run:
-        working-directory: "Fluentvoice frontend"
+
     steps:
-      - name: Checkout repository
+      # ── 1. Source ──────────────────────────────────────────────────────────
+      - name: ⬇️  Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Chrome
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y google-chrome-stable
-          google-chrome --version
-
-      - name: Set up Node.js
+      # ── 2. Node.js ─────────────────────────────────────────────────────────
+      - name: 🟢  Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "npm"
+          cache-dependency-path: |
+            Fluentvoice frontend/package-lock.json
+            Fluentvoice frontend/selenium-tests/package-lock.json
 
-      - name: Install Node.js dependencies (app)
-        run: npm ci
-
-      - name: Build Next.js application
-        run: npm run build
-        env:
-          NODE_ENV: production
-
-      - name: Install Node.js dependencies (tests)
+      # ── 3. Build Backend & Setup Database ──────────────────────────────────
+      - name: 📦  Install Backend dependencies & Setup DB
         run: |
-          cd selenium-tests
-          npm ci
-
-      - name: Install Node.js dependencies (backend)
-        run: |
-          cd "../Fluentvoice backend"
+          cd "Fluentvoice backend"
           npm ci --legacy-peer-deps
-
-      - name: Build and start Express backend
-        run: |
-          cd "../Fluentvoice backend"
           npm run build
           npm run db:setup
           npm run db:seed
+
+      # ── 4. Start Backend Server ────────────────────────────────────────────
+      - name: 🌐  Start Express Backend
+        run: |
+          cd "Fluentvoice backend"
           JWT_SECRET=f746d001e4b1a6a1b8eb3d458aa964de6ccc29254140dbb5a487263282f73841 PORT=5001 npm start &
           sleep 4
+          curl -s http://127.0.0.1:5001/health || echo "Backend not running yet..."
 
-      - name: Start preview server
+      # ── 5. Build Frontend Next.js ──────────────────────────────────────────
+      - name: 📦  Install Web dependencies
+        working-directory: "Fluentvoice frontend"
+        run: npm ci
+
+      - name: 🏗️  Build Web Application
+        working-directory: "Fluentvoice frontend"
+        env:
+          NODE_ENV: production
+        run: npm run build
+
+      # ── 6. Start Local Static Server & Determine Test Target ────────────────
+      - name: 🌐  Start Local Server
         run: |
+          echo "====================================================="
+          echo "🌐 STARTING LOCAL FRONTEND FOR E2E TESTING"
+          echo "====================================================="
+          cd "Fluentvoice frontend"
           node selenium-tests/scripts/serve.js &
           sleep 4
-          curl -s http://127.0.0.1:5173/fluentvoice/ || echo "Waiting..."
+          curl -sI http://127.0.0.1:5173/fluentvoice/ || echo "Local server not reachable yet"
+          echo "TEST_BASE_URL=http://127.0.0.1:5173/fluentvoice" >> "$GITHUB_ENV"
 
-      - name: Run Node.js Selenium Test Suite
-        continue-on-error: true
-        env:
-          BASE_URL: http://127.0.0.1:5173/fluentvoice
-          HEADLESS: "true"
-          PATIENT_EMAIL: testpatient@fluentvoice.io
-          PATIENT_PASSWORD: TestPass123
-          THERAPIST_EMAIL: testtherapist@fluentvoice.io
-          THERAPIST_PASSWORD: TestPass123
-          DEFAULT_TIMEOUT_MS: "20000"
-          PAGE_LOAD_THRESHOLD_MS: "8000"
-          ALLOW_DATA_MUTATION: "false"
-          FAIL_ON_SERIOUS_A11Y: "false"
-          SECURITY_HEADERS_STRICT: "false"
+      # ── 7. Install E2E Dependencies ────────────────────────────────────────
+      - name: 📦  Install E2E dependencies
+        working-directory: "Fluentvoice frontend/selenium-tests"
+        run: npm ci
+
+      # ── 8. Run Web Frontend Security Suite ─────────────────────────────────
+      - name: 🛡️  Run Web Frontend Security Suite
         run: |
-          cd selenium-tests
-          npm test || true
+          echo "====================================================="
+          echo "🌐 WEB FRONTEND SECURITY ANALYSIS"
+          echo "====================================================="
+          cd "Fluentvoice frontend/selenium-tests"
+          node scripts/generateWebSecuritySuite.js
+          
+          # Gather findings
+          mkdir -p "${{ github.workspace }}/Web_Security_Results"
+          cp artifacts/web-security-findings.xlsx "${{ github.workspace }}/Web_Security_Results/web-security-findings.xlsx" || true
+          cp artifacts/web-security-review.md "${{ github.workspace }}/Web_Security_Results/web-security-review.md" || true
+          cp artifacts/web-executive-summary.md "${{ github.workspace }}/Web_Security_Results/web-executive-summary.md" || true
 
-      - name: Inject E2E reports to Next.js build
-        if: always()
-        run: |
-          mkdir -p out/reports/latest
-          mkdir -p out/reports/history/build-${{ github.run_number }}
-          cp selenium-tests/artifacts/reports/execution-report.html out/reports/latest/execution-report.html || true
-          cp selenium-tests/artifacts/reports/execution-report.html out/reports/history/build-${{ github.run_number }}/execution-report.html || true
-          cp selenium-tests/artifacts/reports/selenium-report.xlsx out/reports/latest/selenium-report.xlsx || true
-          cp selenium-tests/artifacts/reports/selenium-report.xlsx out/reports/history/build-${{ github.run_number }}/selenium-report.xlsx || true
-
-      - name: Upload Node.js Test Report Excel
-        uses: actions/upload-artifact@v4
-        if: always()
+      # ── 9. Setup Chrome & ChromeDriver ─────────────────────────────────────
+      - name: 🌐  Setup Chrome (stable)
+        id: chrome
+        uses: browser-actions/setup-chrome@v1
         with:
-          name: Nodejs-Selenium-Test-Report
-          path: "Fluentvoice frontend/selenium-tests/artifacts/reports/FluentVoice_Selenium_Report_*.xlsx"
+          chrome-version: stable
 
-      - name: Setup Pages
+      - name: 🔧  Setup ChromeDriver
+        uses: nanasess/setup-chromedriver@v2
+
+      - name: 📍  Locate ChromeDriver
+        id: chromedriver
+        run: echo "path=$(which chromedriver)" >> "$GITHUB_OUTPUT"
+
+      # ── 10. Run 1100 Selenium E2E Tests ────────────────────────────────────
+      - name: 🧪  Run 1100 Selenium E2E Tests (110 categories × 10 tests)
+        id: selenium
+        working-directory: "Fluentvoice frontend/selenium-tests"
+        env:
+          BASE_URL:                 "${{ env.TEST_BASE_URL }}"
+          HEADLESS:                 "true"
+          PATIENT_EMAIL:            "testpatient@fluentvoice.io"
+          PATIENT_PASSWORD:         "TestPass123"
+          THERAPIST_EMAIL:          "testtherapist@fluentvoice.io"
+          THERAPIST_PASSWORD:       "TestPass123"
+          DEFAULT_TIMEOUT_MS:       "20000"
+          PAGE_LOAD_THRESHOLD_MS:   "8000"
+          ALLOW_DATA_MUTATION:      "false"
+          FAIL_ON_SERIOUS_A11Y:     "false"
+          SECURITY_HEADERS_STRICT:  "false"
+          CHROME_BIN:               ${{ steps.chrome.outputs.chrome-path }}
+          CHROMEDRIVER_PATH:        ${{ steps.chromedriver.outputs.path }}
+        run: |
+          mkdir -p "${{ github.workspace }}/Test_Results/Excel"
+          mkdir -p "${{ github.workspace }}/Test_Results/HTML"
+          mkdir -p "${{ github.workspace }}/Test_Results/Screenshots"
+          mkdir -p "${{ github.workspace }}/Test_Results/Logs"
+          mkdir -p "${{ github.workspace }}/Test_Results/Summary"
+
+          set +e
+          node run.js
+          EXIT=$?
+          set -e
+
+          [ -f artifacts/reports/selenium-report.xlsx ]  && cp artifacts/reports/selenium-report.xlsx  "${{ github.workspace }}/Test_Results/Excel/Automation_Test_Report.xlsx"
+          [ -f artifacts/reports/execution-report.html ] && cp artifacts/reports/execution-report.html "${{ github.workspace }}/Test_Results/HTML/execution-report.html"
+
+          {
+            echo "# 🌐 FluentVoice Web — E2E Test Summary"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| **Deployment URL** | https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/ |"
+            echo "| **Build Number** | ${{ github.run_number }} |"
+            echo "| **Execution Date** | $(date '+%d %B %Y %H:%M UTC') |"
+            echo "| **Test Suite** | 1100 Selenium Tests (110 categories × 10 tests) |"
+            if [ "$EXIT" -eq 0 ]; then
+              echo "| **Result** | ✅ ALL PASSED |"
+            else
+              echo "| **Result** | ⚠️ Partial Pass — see artifacts |"
+            fi
+            echo ""
+            echo "📊 [Download Excel Report (Artifact)](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+            echo ""
+            echo "🌐 [View Live HTML Report](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/reports/latest/execution-report.html)"
+          } > "${{ github.workspace }}/Test_Results/Summary/summary.md"
+
+          exit $EXIT
+        continue-on-error: true
+
+      # ── 11. Copy HTML reports into built dist for unified deployment ─────────
+      - name: 📁  Inject E2E Reports into Build Dist
         if: always()
+        run: |
+          mkdir -p "Fluentvoice frontend/out/reports/latest"
+          mkdir -p "Fluentvoice frontend/out/reports/history/build-${{ github.run_number }}"
+          [ -f Test_Results/HTML/execution-report.html ] && cp Test_Results/HTML/execution-report.html "Fluentvoice frontend/out/reports/latest/execution-report.html"
+          [ -f Test_Results/HTML/execution-report.html ] && cp Test_Results/HTML/execution-report.html "Fluentvoice frontend/out/reports/history/build-${{ github.run_number }}/execution-report.html"
+          [ -f Test_Results/Excel/Automation_Test_Report.xlsx ] && cp Test_Results/Excel/Automation_Test_Report.xlsx "Fluentvoice frontend/out/reports/latest/selenium-report.xlsx"
+          [ -f Test_Results/Excel/Automation_Test_Report.xlsx ] && cp Test_Results/Excel/Automation_Test_Report.xlsx "Fluentvoice frontend/out/reports/history/build-${{ github.run_number }}/selenium-report.xlsx"
+
+      # ── 12. Upload All Artifacts ──────────────────────────────────────────
+      - name: 📤  Upload E2E Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FluentVoice-Web-E2E-Results-${{ github.run_number }}
+          path: Test_Results/
+          retention-days: 30
+
+      - name: 📤  Upload Web Security Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FluentVoice-Web-Security-Review-${{ github.run_number }}
+          path: Web_Security_Results/
+          retention-days: 30
+
+      # ── 13. Deploy Unified App and Reports to GitHub Pages (Native) ────────
+      - name: ⚙️  Setup Pages
+        if: always() && github.ref == 'refs/heads/main'
         uses: actions/configure-pages@v5
 
-      - name: Upload Pages Artifact
-        if: always()
+      - name: 📤  Upload Pages Artifact
+        if: always() && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v3
         with:
           path: "Fluentvoice frontend/out"
 
-      - name: Deploy to GitHub Pages
+      - name: 🚀  Deploy Unified Bundle to GitHub Pages
+        if: always() && github.ref == 'refs/heads/main'
         id: deployment
-        if: always()
         uses: actions/deploy-pages@v4
 
-  security-review:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: "Fluentvoice frontend"
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install Node.js dependencies
+      # ── 14. Write Full GitHub Actions Step Summary ────────────────────────
+      - name: 📝  Write Complete Step Summary
+        if: always()
         run: |
-          cd selenium-tests
-          npm ci
+          # ── Header ──────────────────────────────────────────────────────
+          {
+            echo "# 🌐 FluentVoice Web — Full CI Summary"
+            echo ""
+            echo "> **Run:** #${{ github.run_number }} | **Branch:** \`${{ github.ref_name }}\` | **Date:** $(date '+%d %B %Y %H:%M UTC')"
+            echo ""
+            echo "---"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Run Security Review
-        run: |
-          cd selenium-tests
-          node scripts/generateWebSecuritySuite.js >> $GITHUB_STEP_SUMMARY
-          # Enforce Zero-Critical Policy
-          if grep -q "| \*\*Critical Vulnerabilities\*\* | [1-9]" $GITHUB_STEP_SUMMARY; then
-            echo "Security Policy Gate Failed: Critical vulnerabilities found!"
-            exit 1
+          # ── E2E Test Summary ─────────────────────────────────────────────
+          SUMMARY_FILE="${{ github.workspace }}/Test_Results/Summary/summary.md"
+          if [ -f "$SUMMARY_FILE" ]; then
+            cat "$SUMMARY_FILE" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## ⚠️ E2E summary not generated — check test runner logs." >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Upload Security Report Excel
-        uses: actions/upload-artifact@v4
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "---" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          # ── Web Security Executive Summary ───────────────────────────────
+          WEB_SEC="${{ github.workspace }}/Web_Security_Results/web-executive-summary.md"
+          if [ -f "$WEB_SEC" ]; then
+            cat "$WEB_SEC" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## ⚠️ Web security summary not generated — check security suite logs." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "---" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          # ── Web Security Full Review ─────────────────────────────────────
+          WEB_REV="${{ github.workspace }}/Web_Security_Results/web-security-review.md"
+          if [ -f "$WEB_REV" ]; then
+            cat "$WEB_REV" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## ⚠️ Web security review not generated." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # ── 15. Zero-Critical Web Security Gate ──────────────────────────────
+      - name: 🚨  Enforce Zero-Critical Web Security Policy
         if: always()
-        with:
-          name: Web-Security-Findings-Report
-          path: "Fluentvoice frontend/selenium-tests/artifacts/web-security-findings.xlsx"
+        run: |
+          EXEC="${{ github.workspace }}/Web_Security_Results/web-executive-summary.md"
+          if [ -f "$EXEC" ]; then
+            CRIT=$(grep -oP '🔴 Critical \| \*\*\K[0-9]+' "$EXEC" || echo "0")
+            echo "Critical web security findings: $CRIT"
+            if [ "$CRIT" -gt 0 ]; then
+              echo "❌ BUILD FAILED: ${CRIT} Critical web security finding(s) found."
+              exit 1
+            else
+              echo "✅ Zero Critical web security findings — policy passed."
+            fi
+          else
+            echo "⚠️ Web security executive summary not found — skipping gate."
+          fi

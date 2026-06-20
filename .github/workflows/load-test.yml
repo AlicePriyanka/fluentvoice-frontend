@@ -1,32 +1,45 @@
-name: API Load Testing
+name: 📈 API Load Test
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "master"]
+    paths:
+      - "Fluentvoice backend/**"
+      - ".github/workflows/load-test.yml"
+  pull_request:
+    branches: ["main", "master"]
   workflow_dispatch:
 
 jobs:
-  k6-load-test:
+  load-test:
+    name: 📈 Run k6 Baseline Load Test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
     steps:
-      - name: Checkout repository
+      # ── 1. Source ──────────────────────────────────────────────────────────
+      - name: ⬇️  Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup k6
-        uses: grafana/setup-k6-action@v1
-
-      - name: Run k6 Load Test
-        continue-on-error: true
-        env:
-          BACKEND_URL: https://fluentvoice-backend-blhk.onrender.com
-        run: |
-          k6 run --summary-export=summary.json "Fluentvoice backend/scripts/load-test.js" || true
-
-      - name: Set up Node.js
+      # ── 2. Setup Node.js (for summary parser script) ───────────────────────
+      - name: 🟢  Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      - name: Parse k6 summary results
+      # ── 3. Setup k6 ────────────────────────────────────────────────────────
+      - name: 🛠️  Setup k6
+        uses: grafana/setup-k6-action@v1
+
+      # ── 4. Run k6 Load Test ────────────────────────────────────────────────
+      - name: 📈  Run k6 Baseline Load Test
+        run: |
+          k6 run --summary-export=summary.json \
+            --env BACKEND_URL=https://fluentvoice-backend-blhk.onrender.com \
+            "Fluentvoice backend/scripts/load-test.js"
+
+      # ── 5. Generate & Write Step Summary ──────────────────────────────────
+      - name: 📝  Generate Performance Step Summary
+        if: always()
         run: |
           node "Fluentvoice backend/scripts/parseK6Summary.js" >> $GITHUB_STEP_SUMMARY
