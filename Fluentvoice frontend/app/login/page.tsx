@@ -21,6 +21,36 @@ function LoginForm() {
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [therapists, setTherapists] = useState<{ id: string; name: string }[]>([]);
+  const [selectedTherapistId, setSelectedTherapistId] = useState("");
+
+  // Fetch therapist list when switching to patient registration
+  function handleRoleChange(r: "patient" | "therapist") {
+    setRole(r);
+    setSelectedTherapistId("");
+    if (r === "patient") {
+      fetch("/api/auth/therapists")
+        .then((res) => res.ok ? res.json() : null)
+        .then((data) => {
+          if (data?.therapists) setTherapists(data.therapists);
+        })
+        .catch(() => {});
+    }
+  }
+
+  // Also fetch on mount when mode switches to register with patient role
+  function handleModeChange(m: Mode) {
+    setMode(m);
+    setError("");
+    if (m === "register" && role === "patient") {
+      fetch("/api/auth/therapists")
+        .then((res) => res.ok ? res.json() : null)
+        .then((data) => {
+          if (data?.therapists) setTherapists(data.therapists);
+        })
+        .catch(() => {});
+    }
+  }
 
   function redirectAfterAuth(userRole: "patient" | "therapist") {
     if (from && (from.startsWith("/patient") || from.startsWith("/therapist") || from.startsWith("/settings"))) {
@@ -51,7 +81,7 @@ function LoginForm() {
       const endpoint = mode === "register" ? "/api/auth/register" : "/api/auth/login";
       const body =
         mode === "register"
-          ? { name: name.trim(), email: email.trim(), password, role }
+          ? { name: name.trim(), email: email.trim(), password, role, ...(role === "patient" && selectedTherapistId ? { therapistId: selectedTherapistId } : {}) }
           : { email: email.trim(), password };
 
       const res = await fetch(endpoint, {
@@ -175,7 +205,7 @@ function LoginForm() {
             {(["signin", "register"] as Mode[]).map((m) => (
               <button
                 key={m}
-                onClick={() => { setMode(m); setError(""); }}
+                onClick={() => handleModeChange(m)}
                 className="py-2.5 rounded-lg text-sm font-bold transition-all"
                 style={
                   mode === m
@@ -222,7 +252,7 @@ function LoginForm() {
                       <button
                         key={r}
                         type="button"
-                        onClick={() => setRole(r)}
+                        onClick={() => handleRoleChange(r)}
                         className="relative flex flex-col items-center gap-1.5 py-4 rounded-xl text-sm font-bold transition-all"
                         style={
                           role === r
@@ -269,6 +299,40 @@ function LoginForm() {
                     onFocus={onFocus}
                     onBlur={onBlur}
                   />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Therapist selector — only for patient registration */}
+            <AnimatePresence initial={false}>
+              {mode === "register" && role === "patient" && therapists.length > 0 && (
+                <motion.div
+                  key="therapist"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <label className="block text-xs font-bold uppercase tracking-widest text-[#64748B] mb-2">
+                    Select your therapist
+                  </label>
+                  <select
+                    value={selectedTherapistId}
+                    onChange={(e) => setSelectedTherapistId(e.target.value)}
+                    className="w-full px-4 py-3.5 rounded-xl text-sm font-medium outline-none transition-all"
+                    style={{
+                      background: "white",
+                      border: "1.5px solid #DDE3F0",
+                      boxShadow: "0 2px 8px rgba(27,43,94,0.05)",
+                      color: selectedTherapistId ? "var(--color-navy)" : "#9CA3AF",
+                      appearance: "none",
+                    }}
+                  >
+                    <option value="">Auto-assign (recommended)</option>
+                    {therapists.map((t) => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </select>
                 </motion.div>
               )}
             </AnimatePresence>

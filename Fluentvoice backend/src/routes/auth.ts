@@ -34,11 +34,25 @@ router.post("/register", async (req: Request, res: Response) => {
     const now = new Date();
     const joinedDate = now.toLocaleDateString("en-US", { month: "short", year: "numeric" });
 
-    // For patients: auto-assign to the first therapist in the system
+    // For patients: use the therapistId sent by the client, or round-robin to the one with fewest patients
     let therapistId: string | undefined;
     if (role === "patient") {
-      const therapist = db.prepare("SELECT * FROM users WHERE role = 'therapist' LIMIT 1").get() as DbUser | undefined;
-      if (therapist) therapistId = therapist._id;
+      const requestedTherapistId = req.body.therapistId?.trim();
+      if (requestedTherapistId) {
+        // Validate that the supplied therapistId actually exists and is a therapist
+        const found = db.prepare("SELECT _id FROM users WHERE _id = ? AND role = 'therapist'").get(requestedTherapistId) as DbUser | undefined;
+        if (found) therapistId = found._id;
+      }
+      if (!therapistId) {
+        // Fallback: assign to therapist with fewest current patients
+        const therapist = db.prepare(`
+          SELECT _id FROM users
+          WHERE role = 'therapist'
+          ORDER BY (SELECT COUNT(*) FROM users p WHERE p.therapistId = users._id AND p.role = 'patient') ASC
+          LIMIT 1
+        `).get() as DbUser | undefined;
+        if (therapist) therapistId = therapist._id;
+      }
     }
 
     const userId = crypto.randomBytes(12).toString("hex");
@@ -191,6 +205,19 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
   } catch (err) {
     console.error("Forgot password error:", err);
     return res.status(500).json({ error: "Failed to reset password." });
+  }
+});
+
+// GET /api/auth/therapists — public, used by registration form
+router.get("/therapists", (_req: Request, res: Response) => {
+  try {
+    const therapists = db.prepare(
+      "SELECT _id as id, name FROM users WHERE role = 'therapist' ORDER BY name ASC"
+    ).all();
+    return res.json({ therapists });
+  } catch (err) {
+    console.error("GET /api/auth/therapists error:", err);
+    return res.status(500).json({ error: "Failed to fetch therapists." });
   }
 });
 

@@ -37,8 +37,10 @@ export default function PatientAppointmentsPage() {
 
   function load() {
     setLoading(true);
-    fetch("/api/appointments").then(r => r.ok ? r.json() : null)
+    fetch("/api/appointments")
+      .then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.appointments) setAppointments(d.appointments); })
+      .catch(() => { /* backend unreachable */ })
       .finally(() => setLoading(false));
   }
 

@@ -7,7 +7,6 @@ import {
   Users, TrendingUp, TrendingDown, Minus, ArrowRight,
   Calendar, Check, X, Activity, Loader2, RefreshCw,
 } from "lucide-react";
-import { MOCK_PATIENTS, MOCK_SESSIONS } from "@/lib/mock-data";
 
 const TREND_ICON = {
   improving: TrendingUp,
@@ -67,7 +66,6 @@ interface LiveAppointment {
 export default function TherapistDashboard() {
   const [patients, setPatients] = useState<DisplayPatient[]>([]);
   const [loading, setLoading] = useState(true);
-  const [usingMock, setUsingMock] = useState(false);
   const [totalSessions, setTotalSessions] = useState(0);
   const [avgFluency, setAvgFluency] = useState(0);
   const [appointments, setAppointments] = useState<LiveAppointment[]>([]);
@@ -78,17 +76,18 @@ export default function TherapistDashboard() {
     fetch("/api/therapist/patients", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        if (data?.patients && data.patients.length > 0) {
+        if (data?.patients) {
           const real: DisplayPatient[] = (data.patients as ApiPatient[]).map(toDisplay);
           setPatients(real);
           setTotalSessions(real.reduce((s, p) => s + p.sessionsCount, 0));
-          setAvgFluency(Math.round(real.reduce((s, p) => s + p.avgFluency, 0) / real.length));
-          setUsingMock(false);
+          setAvgFluency(real.length > 0 ? Math.round(real.reduce((s, p) => s + p.avgFluency, 0) / real.length) : 0);
         } else {
-          useMockFallback();
+          setPatients([]);
+          setTotalSessions(0);
+          setAvgFluency(0);
         }
       })
-      .catch(() => useMockFallback())
+      .catch(() => { /* backend unreachable — keep current state */ })
       .finally(() => setLoading(false));
   }
 
@@ -106,32 +105,21 @@ export default function TherapistDashboard() {
     // Fetch live appointments
     fetch("/api/appointments", { cache: "no-store" })
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.appointments) setAppointments(d.appointments); });
+      .then(d => { if (d?.appointments) setAppointments(d.appointments); })
+      .catch(() => { /* backend unreachable */ });
 
     // Auto-refresh every 30 seconds
     const interval = setInterval(() => {
       fetchPatients(false);
       fetch("/api/appointments", { cache: "no-store" })
         .then(r => r.ok ? r.json() : null)
-        .then(d => { if (d?.appointments) setAppointments(d.appointments); });
+        .then(d => { if (d?.appointments) setAppointments(d.appointments); })
+        .catch(() => { /* backend unreachable */ });
     }, 30_000);
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function useMockFallback() {
-    setPatients(
-      MOCK_PATIENTS.map((p) => ({
-        id: p.id, name: p.name, age: p.age,
-        condition: p.condition, sessionsCount: p.sessionsCount,
-        avgFluency: p.avgFluency, trend: p.trend,
-        nextAppointment: p.nextAppointment,
-      }))
-    );
-    setTotalSessions(MOCK_SESSIONS.length);
-    setAvgFluency(Math.round(MOCK_PATIENTS.reduce((s, p) => s + p.avgFluency, 0) / MOCK_PATIENTS.length));
-    setUsingMock(true);
-  }
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -161,9 +149,6 @@ export default function TherapistDashboard() {
                 {loading ? "…" : totalSessions}
               </strong>{" "}sessions this month
             </span>
-            {!loading && usingMock && (
-              <span className="text-amber-500 font-medium">· Sample data</span>
-            )}
           </div>
         </div>
         <div className="flex items-center gap-2 mt-1 shrink-0">
@@ -239,6 +224,12 @@ export default function TherapistDashboard() {
           </div>
         ) : (
           <div className="space-y-3">
+            {patients.length === 0 && (
+              <div className="text-center py-12 text-[#9CA3AF]">
+                <p className="font-bold">No patients yet</p>
+                <p className="text-sm mt-1">Patients will appear here once they register and are assigned to you.</p>
+              </div>
+            )}
             {patients.map((patient, i) => {
               const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
               const initials = patient.name.split(" ").map((w) => w[0]).join("").slice(0, 2);

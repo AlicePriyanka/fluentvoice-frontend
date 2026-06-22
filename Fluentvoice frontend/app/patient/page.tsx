@@ -5,7 +5,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Mic, Upload, TrendingUp, TrendingDown, Calendar, ArrowRight, Play, Sparkles } from "lucide-react";
 import { FluencyGauge } from "@/components/fluency-gauge";
-import { MOCK_SESSIONS, MOCK_PATIENT_TREND, MOCK_DISF_BREAKDOWN } from "@/lib/mock-data";
 import {
   AreaChart, Area, BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer,
 } from "recharts";
@@ -38,8 +37,6 @@ const DISF_LABELS: Record<string, string> = {
   false_start: "False Start", phrase_rep: "Phrase Rep", unknown: "Other",
 };
 
-const MOCK_PATIENT_SESSIONS = MOCK_SESSIONS.filter((s) => s.patientId === "p1");
-const MOCK_LATEST = MOCK_PATIENT_SESSIONS[0];
 
 function sevColor(s: string) {
   return s === "mild" ? "#10B981" : s === "moderate" ? "#F59E0B" : "#EF4444";
@@ -53,7 +50,7 @@ function sevLabel(s: string) {
 export default function PatientDashboard() {
   const [realSessions, setRealSessions] = useState<StoredSession[]>([]);
   const [hydrated, setHydrated] = useState(false);
-  const [displayName, setDisplayName] = useState("Arjun Kumar");
+  const [displayName, setDisplayName] = useState("");
   const [greeting, setGreeting] = useState("Good morning");
 
   useEffect(() => {
@@ -84,11 +81,12 @@ export default function PatientDashboard() {
               })
             );
             setRealSessions(mapped);
-            setHydrated(true);
-            return;
           }
+          // API succeeded — do NOT fall through to localStorage (keeps user sessions clean)
+          setHydrated(true);
+          return;
         }
-      } catch { /* fall through */ }
+      } catch { /* fall through to localStorage */ }
 
       // Offline / unauthenticated fallback — localStorage
       try {
@@ -104,10 +102,10 @@ export default function PatientDashboard() {
   const hasReal = realSessions.length > 0;
 
   // ── Latest session ──────────────────────────────────────────────────────────
-  const latestScore    = hasReal ? realSessions[0].report.fluency_score : MOCK_LATEST.fluencyScore;
-  const latestDate     = hasReal ? realSessions[0].date                  : MOCK_LATEST.date;
-  const latestSev      = hasReal ? realSessions[0].report.severity        : MOCK_LATEST.severity;
-  const latestDisf     = hasReal ? realSessions[0].report.disfluencies    : MOCK_LATEST.disfluencies;
+  const latestScore = hasReal ? realSessions[0].report.fluency_score : 0;
+  const latestDate = hasReal ? realSessions[0].date : "";
+  const latestSev = hasReal ? realSessions[0].report.severity : "mild";
+  const latestDisf = hasReal ? realSessions[0].report.disfluencies : [];
 
   // ── Trend chart (oldest→newest, max 7 points) ───────────────────────────────
   const trendData = useMemo(() => {
@@ -117,7 +115,7 @@ export default function PatientDashboard() {
         .slice(-7)
         .map((s, i) => ({ week: `S${i + 1}`, fluency: s.report.fluency_score }));
     }
-    return MOCK_PATIENT_TREND;
+    return [];
   }, [realSessions]);
 
   const trendDelta = useMemo(() => {
@@ -125,16 +123,16 @@ export default function PatientDashboard() {
       const oldest = [...realSessions].reverse()[0].report.fluency_score;
       return realSessions[0].report.fluency_score - oldest;
     }
-    return 26;
+    return 0;
   }, [realSessions]);
 
   const trendLabel = hasReal && realSessions.length >= 2
     ? `Last ${Math.min(realSessions.length, 7)} sessions`
-    : "Sample data";
+    : "";
 
   // ── Disfluency breakdown ────────────────────────────────────────────────────
   const disfBreakdown = useMemo(() => {
-    if (!hasReal) return MOCK_DISF_BREAKDOWN;
+    if (!hasReal) return [];
     const counts: Record<string, number> = {};
     realSessions.forEach((s) =>
       s.report.disfluencies.forEach((ev) => {
@@ -152,9 +150,9 @@ export default function PatientDashboard() {
       }));
   }, [realSessions, hasReal]);
 
-  // ── Recent sessions list (real first, mock fill to 3) ──────────────────────
+  // ── Recent sessions list (real sessions only, up to 3) ─────────────────────
   const recentSessions = useMemo(() => {
-    const real = realSessions.slice(0, 3).map((s) => ({
+    return realSessions.slice(0, 3).map((s) => ({
       id: String(s.id),
       date: s.date,
       fluencyScore: s.report.fluency_score,
@@ -162,20 +160,9 @@ export default function PatientDashboard() {
       speechRate: s.report.speech_rate,
       disfCount: s.report.disfluencies.length,
     }));
-    if (real.length >= 3) return real;
-    const fill = MOCK_PATIENT_SESSIONS.slice(0, 3 - real.length).map((s) => ({
-      id: s.id,
-      date: s.date,
-      fluencyScore: s.fluencyScore,
-      severity: s.severity,
-      speechRate: s.speechRate,
-      disfCount: s.disfluencies.length,
-    }));
-    return [...real, ...fill];
   }, [realSessions]);
 
-  // Use real count when available; mock count only as demo fallback
-  const totalCount = hasReal ? realSessions.length : MOCK_PATIENT_SESSIONS.length;
+  const totalCount = realSessions.length;
 
   return (
     <div className="max-w-5xl mx-auto space-y-5">
@@ -260,78 +247,77 @@ export default function PatientDashboard() {
 
         {/* ── Score + gauge (only when real sessions exist) ── */}
         {(!hydrated || hasReal) && (
-        <div className="grid grid-cols-1 md:grid-cols-[auto_1fr]">
+          <div className="grid grid-cols-1 md:grid-cols-[auto_1fr]">
 
-          {/* Left: score + gauge */}
-          <div
-            className="flex flex-col items-center justify-center px-8 py-7 gap-1 md:border-r"
-            style={{ borderColor: "var(--color-border)" }}
-          >
-            <FluencyGauge score={latestScore} size={180} />
-            <div className="mt-3 text-center">
-              <div className="text-4xl font-black tabnum leading-none" style={{ color: "var(--color-navy)" }}>
-                {latestScore}
+            {/* Left: score + gauge */}
+            <div
+              className="flex flex-col items-center justify-center px-8 py-7 gap-1 md:border-r"
+              style={{ borderColor: "var(--color-border)" }}
+            >
+              <FluencyGauge score={latestScore} size={180} />
+              <div className="mt-3 text-center">
+                <div className="text-4xl font-black tabnum leading-none" style={{ color: "var(--color-navy)" }}>
+                  {latestScore}
+                </div>
+                <div className="text-xs text-[#9CA3AF] font-medium mt-1">Fluency score</div>
+                <div className="mt-2 flex items-center justify-center gap-2">
+                  <span
+                    className="text-xs font-bold px-2.5 py-1 rounded-full"
+                    style={{
+                      background: `${sevColor(latestSev)}18`,
+                      color: sevColor(latestSev),
+                    }}
+                  >
+                    {sevLabel(latestSev)}
+                  </span>
+                  <span className="text-[11px] text-[#9CA3AF]">{latestDate}</span>
+                </div>
               </div>
-              <div className="text-xs text-[#9CA3AF] font-medium mt-1">Fluency score</div>
-              <div className="mt-2 flex items-center justify-center gap-2">
-                <span
-                  className="text-xs font-bold px-2.5 py-1 rounded-full"
-                  style={{
-                    background: `${sevColor(latestSev)}18`,
-                    color: sevColor(latestSev),
-                  }}
+            </div>
+
+            {/* Right: trend chart */}
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="font-bold text-sm" style={{ color: "var(--color-navy)" }}>Fluency Over Time</h2>
+                  <p className="text-xs text-[#9CA3AF] mt-0.5">{trendLabel}</p>
+                </div>
+                <div
+                  className={`flex items-center gap-1 text-xs font-bold ${trendDelta >= 0 ? "text-[#10B981]" : "text-[#EF4444]"
+                    }`}
                 >
-                  {sevLabel(latestSev)}
-                </span>
-                <span className="text-[11px] text-[#9CA3AF]">{latestDate}</span>
+                  {trendDelta >= 0
+                    ? <TrendingUp className="w-3.5 h-3.5" />
+                    : <TrendingDown className="w-3.5 h-3.5" />}
+                  {trendDelta >= 0 ? "+" : ""}{trendDelta} pts
+                </div>
               </div>
+              <ResponsiveContainer width="100%" height={160}>
+                <AreaChart data={trendData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                  <defs>
+                    <linearGradient id="fluencyGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#1B2B5E" stopOpacity={0.15} />
+                      <stop offset="95%" stopColor="#1B2B5E" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="week" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                  <Tooltip
+                    contentStyle={{ background: "white", border: "1px solid #DDE3F0", borderRadius: 10, fontSize: 12 }}
+                    formatter={(v) => v != null ? [`${v}`, "Fluency Score"] : ["–", "Fluency Score"]}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="fluency"
+                    stroke="#1B2B5E"
+                    strokeWidth={2.5}
+                    fill="url(#fluencyGrad)"
+                    dot={{ fill: "#1B2B5E", r: 4 }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </div>
-
-          {/* Right: trend chart */}
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="font-bold text-sm" style={{ color: "var(--color-navy)" }}>Fluency Over Time</h2>
-                <p className="text-xs text-[#9CA3AF] mt-0.5">{trendLabel}</p>
-              </div>
-              <div
-                className={`flex items-center gap-1 text-xs font-bold ${
-                  trendDelta >= 0 ? "text-[#10B981]" : "text-[#EF4444]"
-                }`}
-              >
-                {trendDelta >= 0
-                  ? <TrendingUp className="w-3.5 h-3.5" />
-                  : <TrendingDown className="w-3.5 h-3.5" />}
-                {trendDelta >= 0 ? "+" : ""}{trendDelta} pts
-              </div>
-            </div>
-            <ResponsiveContainer width="100%" height={160}>
-              <AreaChart data={trendData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
-                <defs>
-                  <linearGradient id="fluencyGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#1B2B5E" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="#1B2B5E" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="week" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ background: "white", border: "1px solid #DDE3F0", borderRadius: 10, fontSize: 12 }}
-                  formatter={(v) => v != null ? [`${v}`, "Fluency Score"] : ["–", "Fluency Score"]}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="fluency"
-                  stroke="#1B2B5E"
-                  strokeWidth={2.5}
-                  fill="url(#fluencyGrad)"
-                  dot={{ fill: "#1B2B5E", r: 4 }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
         )} {/* end hasReal score block */}
 
         {/* Footer: quick utility strip — no cards, just actions */}
@@ -341,10 +327,10 @@ export default function PatientDashboard() {
         >
           <span className="text-[11px] font-bold uppercase tracking-widest text-[#9CA3AF] mr-2 shrink-0">Actions</span>
           {[
-            { icon: Mic,      label: "Record voice",   href: "/patient/record",    color: "#1B2B5E" },
-            { icon: Upload,   label: "Upload audio",   href: "/patient/record",    color: "#6366F1" },
+            { icon: Mic, label: "Record voice", href: "/patient/record", color: "#1B2B5E" },
+            { icon: Upload, label: "Upload audio", href: "/patient/record", color: "#6366F1" },
             { icon: Calendar, label: "Treatment plan", href: "/patient/treatment", color: "#C9A961" },
-            { icon: ArrowRight, label: "All sessions", href: "/patient/sessions",  color: "#10B981" },
+            { icon: ArrowRight, label: "All sessions", href: "/patient/sessions", color: "#10B981" },
           ].map((a) => (
             <Link
               key={a.label}
@@ -361,143 +347,143 @@ export default function PatientDashboard() {
 
       {/* ── Disfluency breakdown + Recent sessions (only after first recording) ── */}
       {hydrated && hasReal && (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-        {/* Breakdown */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.18 }}
-          className="p-6 rounded-2xl border"
-          style={{ background: "white", borderColor: "var(--color-border)", boxShadow: "var(--shadow-sm)" }}
-        >
-          <h3 className="font-bold text-[var(--color-navy)] text-sm mb-0.5">Disfluency Breakdown</h3>
-          <p className="text-xs text-[#9CA3AF] mb-5">
-            {hasReal ? `Across ${realSessions.length} session${realSessions.length > 1 ? "s" : ""}` : "Sample data"}
-          </p>
-          {disfBreakdown.length === 0 ? (
-            <div className="flex items-center justify-center h-[160px] text-sm text-[#9CA3AF]">
-              No disfluency events detected yet.
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={disfBreakdown} margin={{ top: 0, right: 0, bottom: 0, left: -20 }}>
-                <XAxis dataKey="type" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ background: "white", border: "1px solid #DDE3F0", borderRadius: 10, fontSize: 12 }}
-                />
-                <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                  {disfBreakdown.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </motion.div>
+          {/* Breakdown */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18 }}
+            className="p-6 rounded-2xl border"
+            style={{ background: "white", borderColor: "var(--color-border)", boxShadow: "var(--shadow-sm)" }}
+          >
+            <h3 className="font-bold text-[var(--color-navy)] text-sm mb-0.5">Disfluency Breakdown</h3>
+            <p className="text-xs text-[#9CA3AF] mb-5">
+              {hasReal ? `Across ${realSessions.length} session${realSessions.length > 1 ? "s" : ""}` : "Sample data"}
+            </p>
+            {disfBreakdown.length === 0 ? (
+              <div className="flex items-center justify-center h-[160px] text-sm text-[#9CA3AF]">
+                No disfluency events detected yet.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart data={disfBreakdown} margin={{ top: 0, right: 0, bottom: 0, left: -20 }}>
+                  <XAxis dataKey="type" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                  <Tooltip
+                    contentStyle={{ background: "white", border: "1px solid #DDE3F0", borderRadius: 10, fontSize: 12 }}
+                  />
+                  <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                    {disfBreakdown.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </motion.div>
 
-        {/* Recent sessions */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.22 }}
-          className="p-6 rounded-2xl border"
-          style={{ background: "white", borderColor: "var(--color-border)", boxShadow: "var(--shadow-sm)" }}
-        >
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <h3 className="font-bold text-[var(--color-navy)] text-sm">Recent Sessions</h3>
-              <p className="text-xs text-[#9CA3AF] mt-0.5">{totalCount} sessions total</p>
+          {/* Recent sessions */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.22 }}
+            className="p-6 rounded-2xl border"
+            style={{ background: "white", borderColor: "var(--color-border)", boxShadow: "var(--shadow-sm)" }}
+          >
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h3 className="font-bold text-[var(--color-navy)] text-sm">Recent Sessions</h3>
+                <p className="text-xs text-[#9CA3AF] mt-0.5">{totalCount} sessions total</p>
+              </div>
+              <Link
+                href="/patient/sessions"
+                className="text-xs font-bold text-[var(--color-navy)] hover:text-[var(--color-gold)] transition-colors"
+              >
+                View all →
+              </Link>
             </div>
-            <Link
-              href="/patient/sessions"
-              className="text-xs font-bold text-[var(--color-navy)] hover:text-[var(--color-gold)] transition-colors"
-            >
-              View all →
-            </Link>
-          </div>
-          <div className="space-y-2">
-            {recentSessions.map((s) => {
-              const sc = sevColor(s.severity);
-              return (
-                <Link key={s.id} href="/patient/sessions">
-                  <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-[#F0F4FF] cursor-pointer">
-                    <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                      style={{ background: `${sc}14` }}
-                    >
-                      <Play className="w-3.5 h-3.5" style={{ color: sc }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-semibold text-[var(--color-navy)] truncate">{s.date}</div>
-                      <div className="text-[11px] text-[#9CA3AF]">
-                        {s.disfCount} events
-                        {s.speechRate > 0 && s.speechRate < 300 && ` · ${Math.round(s.speechRate)} wpm`}
+            <div className="space-y-2">
+              {recentSessions.map((s) => {
+                const sc = sevColor(s.severity);
+                return (
+                  <Link key={s.id} href="/patient/sessions">
+                    <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-[#F0F4FF] cursor-pointer">
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                        style={{ background: `${sc}14` }}
+                      >
+                        <Play className="w-3.5 h-3.5" style={{ color: sc }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-semibold text-[var(--color-navy)] truncate">{s.date}</div>
+                        <div className="text-[11px] text-[#9CA3AF]">
+                          {s.disfCount} events
+                          {s.speechRate > 0 && s.speechRate < 300 && ` · ${Math.round(s.speechRate)} wpm`}
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="text-sm font-black tabnum" style={{ color: "var(--color-navy)" }}>{s.fluencyScore}</div>
+                        <div className="text-[10px] font-bold capitalize" style={{ color: sc }}>{s.severity}</div>
                       </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <div className="text-sm font-black tabnum" style={{ color: "var(--color-navy)" }}>{s.fluencyScore}</div>
-                      <div className="text-[10px] font-bold capitalize" style={{ color: sc }}>{s.severity}</div>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </motion.div>
-      </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </motion.div>
+        </div>
       )} {/* end hasReal data sections */}
 
       {/* ── Latest disfluency timeline (only with real data) ─────── */}
       {hydrated && hasReal && (
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.28 }}
-        className="p-6 rounded-2xl border"
-        style={{ background: "white", borderColor: "var(--color-border)", boxShadow: "var(--shadow-sm)" }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="font-bold text-[var(--color-navy)] text-sm">Latest Session: Disfluency Timeline</h3>
-            <p className="text-xs text-[#9CA3AF] mt-0.5">{latestDate}</p>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.28 }}
+          className="p-6 rounded-2xl border"
+          style={{ background: "white", borderColor: "var(--color-border)", boxShadow: "var(--shadow-sm)" }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-bold text-[var(--color-navy)] text-sm">Latest Session: Disfluency Timeline</h3>
+              <p className="text-xs text-[#9CA3AF] mt-0.5">{latestDate}</p>
+            </div>
           </div>
-        </div>
-        {latestDisf.length === 0 ? (
-          <p className="text-sm text-[#9CA3AF]">No disfluency events detected in this session.</p>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {latestDisf.map((ev, i) => {
-              const evType = ev.event ?? "unknown";
-              const color = DISF_COLORS[evType] ?? "#9CA3AF";
-              const label = DISF_LABELS[evType] ?? evType.replace("_", " ");
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, scale: 0.85 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 + i * 0.05 }}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold"
-                  style={{ background: `${color}16`, color, border: `1px solid ${color}30` }}
-                >
-                  <span>{label}</span>
-                  {ev.word && <span className="opacity-60">&quot;{ev.word}&quot;</span>}
-                  <span className="opacity-50">@{ev.time ?? "–"}</span>
-                  {ev.duration && (
-                    <span
-                      className="px-1 py-0.5 rounded-full text-[10px] font-bold"
-                      style={{ background: `${color}20` }}
-                    >
-                      {ev.duration}s
-                    </span>
-                  )}
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
-      </motion.div>
+          {latestDisf.length === 0 ? (
+            <p className="text-sm text-[#9CA3AF]">No disfluency events detected in this session.</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {latestDisf.map((ev, i) => {
+                const evType = ev.event ?? "unknown";
+                const color = DISF_COLORS[evType] ?? "#9CA3AF";
+                const label = DISF_LABELS[evType] ?? evType.replace("_", " ");
+                return (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3 + i * 0.05 }}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold"
+                    style={{ background: `${color}16`, color, border: `1px solid ${color}30` }}
+                  >
+                    <span>{label}</span>
+                    {ev.word && <span className="opacity-60">&quot;{ev.word}&quot;</span>}
+                    <span className="opacity-50">@{ev.time ?? "–"}</span>
+                    {ev.duration && (
+                      <span
+                        className="px-1 py-0.5 rounded-full text-[10px] font-bold"
+                        style={{ background: `${color}20` }}
+                      >
+                        {ev.duration}s
+                      </span>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </motion.div>
       )} {/* end hasReal timeline */}
 
     </div>

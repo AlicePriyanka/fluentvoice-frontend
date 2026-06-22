@@ -4,7 +4,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Users, TrendingUp, TrendingDown, Minus, ArrowRight, Search, Loader2, RefreshCw } from "lucide-react";
 import { useState, useEffect } from "react";
-import { MOCK_PATIENTS } from "@/lib/mock-data";
 
 const TREND_ICON = {
   improving: TrendingUp,
@@ -40,7 +39,7 @@ export default function PatientsPage() {
     fetch("/api/therapist/patients", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        if (data?.patients?.length > 0) {
+        if (data?.patients) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const mapped = data.patients.map((p: any) => ({
             id: p.id,
@@ -61,26 +60,11 @@ export default function PatientsPage() {
           );
           setPatients(mapped);
         } else {
-          // Fall back to mock
-          setPatients(
-            MOCK_PATIENTS.map((p) => ({
-              id: p.id, name: p.name, age: p.age,
-              condition: p.condition, sessionsCount: p.sessionsCount,
-              avgFluency: p.avgFluency, trend: p.trend,
-              nextAppointment: p.nextAppointment, joinedDate: p.joinedDate,
-            }))
-          );
+          setPatients([]);
         }
       })
       .catch(() => {
-        setPatients(
-          MOCK_PATIENTS.map((p) => ({
-            id: p.id, name: p.name, age: p.age,
-            condition: p.condition, sessionsCount: p.sessionsCount,
-            avgFluency: p.avgFluency, trend: p.trend,
-            nextAppointment: p.nextAppointment, joinedDate: p.joinedDate,
-          }))
-        );
+        setPatients([]);
       })
       .finally(() => setLoading(false));
   }
@@ -177,10 +161,10 @@ export default function PatientsPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.length === 0 && (
+          {filtered.length === 0 && !loading && (
             <div className="text-center py-16 text-[#9CA3AF]">
-              <p className="font-bold">No patients found</p>
-              <p className="text-sm mt-1">Try a different search term.</p>
+              <p className="font-bold">{query ? "No patients found" : "No patients assigned yet"}</p>
+              <p className="text-sm mt-1">{query ? "Try a different search term." : "New patients will appear here once they register."}</p>
             </div>
           )}
           {filtered.map((patient, i) => {

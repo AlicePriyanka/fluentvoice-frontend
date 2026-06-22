@@ -5,7 +5,6 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, TrendingUp, Mic, ChevronRight, X, Sparkles } from "lucide-react";
 import { FluencyGauge } from "@/components/fluency-gauge";
-import { MOCK_SESSIONS } from "@/lib/mock-data";
 
 interface StoredSession {
   id: number;
@@ -80,20 +79,6 @@ function generateInsights(report: StoredSession["report"]): string[] {
   return insights;
 }
 
-const mockAsStored: StoredSession[] = MOCK_SESSIONS
-  .filter((s) => s.patientId === "p1")
-  .map((s) => ({
-    id: parseInt(s.id.replace(/\D/g, ""), 10) || 0,
-    date: s.date,
-    report: {
-      fluency_score: s.fluencyScore,
-      severity: s.severity as "mild" | "moderate" | "severe",
-      speech_rate: s.speechRate,
-      transcript: s.transcript,
-      disfluencies: s.disfluencies,
-      pauses: s.pauses,
-    },
-  }));
 
 export default function SessionsPage() {
   const [realSessions, setRealSessions] = useState<StoredSession[]>([]);
@@ -152,9 +137,9 @@ export default function SessionsPage() {
 
   const hasReal = realSessions.length > 0;
 
-  // When real sessions exist, show only those. Otherwise show mock as sample data.
-  const displaySessions = hasReal ? realSessions : (hydrated ? mockAsStored : []);
-  const isSampleData = !hasReal && hydrated;
+  // Show only real sessions
+  const displaySessions = realSessions;
+  const isSampleData = false;
 
   const avgScore = displaySessions.length > 0
     ? Math.round(displaySessions.reduce((s, r) => s + r.report.fluency_score, 0) / displaySessions.length)

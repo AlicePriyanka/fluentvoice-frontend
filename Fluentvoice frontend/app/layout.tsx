@@ -55,7 +55,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${libreBaskerville.variable} h-full antialiased`}>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `
+        <script dangerouslySetInnerHTML={{
+          __html: `
           (function() {
             var originalFetch = window.fetch;
             window.fetch = function(input, init) {
