@@ -32,16 +32,23 @@ interface ApiPatient {
   lastSessionDate: string | null;
   condition: string | null;
   nextAppointment: string | null;
+  assessmentStatus?: string;
+  treatmentPlanStatus?: string;
 }
 
 interface DisplayPatient {
   id: string;
   name: string;
+  email: string;
+  joinedDate: string;
   age: number;
   condition: string;
   sessionsCount: number;
   avgFluency: number;
   trend: "improving" | "stable" | "declining";
+  lastSessionDate: string | null;
+  assessmentStatus: string;
+  treatmentPlanStatus: string;
   nextAppointment: string;
 }
 
@@ -49,18 +56,23 @@ function toDisplay(p: ApiPatient): DisplayPatient {
   return {
     id: p.id,
     name: p.name,
+    email: p.email,
+    joinedDate: p.joinedDate,
     age: 0,
     condition: p.condition ?? "Fluency disorder",
     sessionsCount: p.sessionsCount,
     avgFluency: p.avgFluency,
     trend: p.trend,
+    lastSessionDate: p.lastSessionDate,
+    assessmentStatus: p.assessmentStatus ?? "pending",
+    treatmentPlanStatus: p.treatmentPlanStatus ?? "pending",
     nextAppointment: p.nextAppointment ?? "Not scheduled",
   };
 }
 
 interface LiveAppointment {
   id: string; patientName: string; date: string; time: string;
-  status: "pending" | "confirmed" | "cancelled"; type: string;
+  status: "pending" | "confirmed" | "cancelled" | "accepted" | "rejected" | "completed"; type: string;
 }
 
 export default function TherapistDashboard() {
@@ -92,15 +104,17 @@ export default function TherapistDashboard() {
   }
 
   useEffect(() => {
-    try {
-      const user = localStorage.getItem("fv_user");
-      if (user) {
-        const parsed = JSON.parse(user);
-        if (parsed?.name) setDisplayName(parsed.name);
-      }
-    } catch { /* ignore */ }
+    const timer = setTimeout(() => {
+      try {
+        const user = localStorage.getItem("fv_user");
+        if (user) {
+          const parsed = JSON.parse(user);
+          if (parsed?.name) setDisplayName(parsed.name);
+        }
+      } catch { /* ignore */ }
 
-    fetchPatients(true);
+      fetchPatients(true);
+    }, 0);
 
     // Fetch live appointments
     fetch("/api/appointments", { cache: "no-store" })
@@ -116,7 +130,10 @@ export default function TherapistDashboard() {
         .then(d => { if (d?.appointments) setAppointments(d.appointments); })
         .catch(() => { /* backend unreachable */ });
     }, 30_000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -270,14 +287,25 @@ export default function TherapistDashboard() {
                             {patient.condition}
                           </span>
                         </div>
-                        <div className="flex items-center gap-3 mt-1.5 text-xs text-[#9CA3AF]">
+                        <div className="flex items-center gap-3 mt-1 text-xs text-[#9CA3AF] flex-wrap">
+                          <span>{patient.email}</span>
+                          <span>·</span>
+                          <span>Registered: {patient.joinedDate}</span>
+                        </div>
+                        <div className="flex items-center gap-3 mt-1 text-xs text-[#9CA3AF] flex-wrap">
                           <span>{patient.sessionsCount} session{patient.sessionsCount !== 1 ? "s" : ""}</span>
                           <span>·</span>
-                          <span>
-                            {patient.nextAppointment === "Not scheduled"
-                              ? "No appt scheduled"
-                              : `Next appt: ${patient.nextAppointment.split(" ")[0]}`}
-                          </span>
+                          <span>Latest session: {patient.lastSessionDate ? new Date(patient.lastSessionDate).toLocaleDateString("en-IN") : "None"}</span>
+                          <span>·</span>
+                          <span className="capitalize">Assessment: <strong className="font-semibold">{patient.assessmentStatus}</strong></span>
+                          <span>·</span>
+                          <span className="capitalize">Plan: <strong className="font-semibold">{patient.treatmentPlanStatus}</strong></span>
+                          {patient.nextAppointment !== "Not scheduled" && (
+                            <>
+                              <span>·</span>
+                              <span>Next appt: {patient.nextAppointment.split(" ")[0]}</span>
+                            </>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-4 shrink-0">
@@ -321,15 +349,15 @@ export default function TherapistDashboard() {
             </span>
           )}
         </h3>
-        {appointments.filter(a => a.status !== "cancelled").length === 0 ? (
+        {appointments.filter(a => a.status !== "cancelled" && a.status !== "rejected").length === 0 ? (
           <p className="text-sm text-[#9CA3AF] py-2">No upcoming appointments.</p>
         ) : (
           <div className="space-y-3">
-            {appointments.filter(a => a.status !== "cancelled").map((a, i) => {
+            {appointments.filter(a => a.status !== "cancelled" && a.status !== "rejected").map((a, i) => {
               const initials = a.patientName.split(" ").map(w => w[0]).join("").slice(0, 2);
               const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
 
-              async function updateStatus(status: "confirmed" | "cancelled") {
+               async function updateStatus(status: "confirmed" | "cancelled" | "accepted" | "rejected" | "completed") {
                 await fetch(`/api/appointments/${a.id}`, {
                   method: "PUT",
                   headers: { "Content-Type": "application/json" },
@@ -341,9 +369,12 @@ export default function TherapistDashboard() {
                   .then(d => { if (d?.appointments) setAppointments(d.appointments); });
               }
 
+              const isConfirmed = a.status === "confirmed" || a.status === "accepted";
+              const isCompleted = a.status === "completed";
+
               return (
                 <div key={a.id} className="flex items-center gap-3 p-2 rounded-xl transition-all"
-                  style={{ background: a.status === "confirmed" ? "rgba(16,185,129,0.05)" : "transparent" }}>
+                  style={{ background: isCompleted ? "rgba(99,102,241,0.05)" : isConfirmed ? "rgba(16,185,129,0.05)" : "transparent" }}>
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-xs font-bold text-white" style={{ background: color }}>
                     {initials}
                   </div>
@@ -357,25 +388,35 @@ export default function TherapistDashboard() {
                   </div>
                   {a.status === "pending" ? (
                     <div className="flex gap-2">
-                      <button onClick={() => updateStatus("cancelled")}
+                      <button onClick={() => updateStatus("rejected")}
                         className="text-xs font-bold px-3 py-1.5 rounded-lg text-red-500 hover:bg-red-50 border border-red-100 flex items-center gap-1">
-                        <X className="w-3 h-3" /> Cancel
+                        <X className="w-3 h-3" /> Reject
                       </button>
-                      <button onClick={() => updateStatus("confirmed")}
+                      <button onClick={() => updateStatus("accepted")}
                         className="text-xs font-bold px-3 py-1.5 rounded-lg text-white flex items-center gap-1"
                         style={{ background: "var(--color-navy)" }}>
-                        <Check className="w-3 h-3" /> Confirm
+                        <Check className="w-3 h-3" /> Accept
                       </button>
                     </div>
+                  ) : a.status === "completed" ? (
+                    <span className="text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1"
+                      style={{ background: "rgba(99,102,241,0.1)", color: "#6366F1" }}>
+                      <Check className="w-3 h-3" /> Completed
+                    </span>
                   ) : (
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1"
                         style={{ background: "rgba(16,185,129,0.1)", color: "#10B981" }}>
-                        <Check className="w-3 h-3" /> Confirmed
+                        <Check className="w-3 h-3" /> {a.status === "accepted" ? "Accepted" : "Confirmed"}
                       </span>
-                      <button onClick={() => updateStatus("cancelled")}
+                      <button onClick={() => updateStatus("completed")}
+                        className="text-xs font-bold px-3 py-1.5 rounded-lg text-white flex items-center gap-1 hover:opacity-90"
+                        style={{ background: "var(--color-navy)" }}>
+                        <Check className="w-3 h-3" /> Complete
+                      </button>
+                      <button onClick={() => updateStatus("rejected")}
                         className="text-[10px] text-[#9CA3AF] hover:text-red-500 transition-colors">
-                        Cancel
+                        Reject
                       </button>
                     </div>
                   )}

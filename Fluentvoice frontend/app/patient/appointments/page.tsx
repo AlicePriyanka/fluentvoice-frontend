@@ -6,14 +6,17 @@ import { Calendar, Clock, Plus, X, Check, Video, MapPin, Loader2 } from "lucide-
 
 interface Appointment {
   id: string; date: string; time: string; durationMinutes: number;
-  type: "in-clinic" | "telehealth"; status: "pending" | "confirmed" | "cancelled";
+  type: "in-clinic" | "telehealth"; status: "pending" | "confirmed" | "cancelled" | "accepted" | "rejected" | "completed";
   notes: string; patientName: string;
 }
 
-const STATUS_STYLES = {
+const STATUS_STYLES: Record<string, { bg: string; color: string; label: string }> = {
   pending:   { bg: "rgba(245,158,11,0.08)",  color: "#F59E0B", label: "Pending" },
   confirmed: { bg: "rgba(16,185,129,0.08)",  color: "#10B981", label: "Confirmed" },
+  accepted:  { bg: "rgba(16,185,129,0.08)",  color: "#10B981", label: "Accepted" },
   cancelled: { bg: "rgba(239,68,68,0.08)",   color: "#EF4444", label: "Cancelled" },
+  rejected:  { bg: "rgba(239,68,68,0.08)",   color: "#EF4444", label: "Rejected" },
+  completed: { bg: "rgba(99,102,241,0.08)",  color: "#6366F1", label: "Completed" },
 };
 
 function formatDate(d: string) {
@@ -44,7 +47,12 @@ export default function PatientAppointmentsPage() {
       .finally(() => setLoading(false));
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      load();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   async function cancel(id: string) {
     await fetch(`/api/appointments/${id}`, {

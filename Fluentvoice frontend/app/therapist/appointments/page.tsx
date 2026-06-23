@@ -6,7 +6,7 @@ import { Calendar, Check, X, Clock, User, RefreshCw } from "lucide-react";
 
 const AVATAR_COLORS = ["#6366F1", "#8B5CF6", "#EC4899", "#1B2B5E", "#10B981", "#F59E0B"];
 
-type ApptStatus = "pending" | "confirmed" | "cancelled";
+type ApptStatus = "pending" | "confirmed" | "cancelled" | "accepted" | "rejected" | "completed";
 
 interface Appointment {
   id: string;
@@ -59,8 +59,8 @@ export default function TherapistAppointmentsPage() {
   }
 
   const pending   = appointments.filter((a) => a.status === "pending").length;
-  const confirmed = appointments.filter((a) => a.status === "confirmed").length;
-  const cancelled = appointments.filter((a) => a.status === "cancelled").length;
+  const confirmed = appointments.filter((a) => a.status === "confirmed" || a.status === "accepted" || a.status === "completed").length;
+  const cancelled = appointments.filter((a) => a.status === "cancelled" || a.status === "rejected").length;
 
   return (
     <div className="max-w-3xl mx-auto space-y-5">
@@ -145,8 +145,8 @@ export default function TherapistAppointmentsPage() {
                 style={{
                   background: "white",
                   borderColor:
-                    appt.status === "confirmed" ? "rgba(16,185,129,0.3)"
-                    : appt.status === "cancelled" ? "rgba(239,68,68,0.2)"
+                    (appt.status === "confirmed" || appt.status === "accepted" || appt.status === "completed") ? "rgba(16,185,129,0.3)"
+                    : (appt.status === "cancelled" || appt.status === "rejected") ? "rgba(239,68,68,0.2)"
                     : "var(--color-border)",
                   boxShadow: "var(--shadow-sm)",
                   opacity: isUpdating ? 0.6 : 1,
@@ -187,35 +187,53 @@ export default function TherapistAppointmentsPage() {
                     <div className="flex gap-2 shrink-0">
                       <button
                         disabled={isUpdating}
-                        onClick={() => updateStatus(appt.id, "cancelled")}
+                        onClick={() => updateStatus(appt.id, "rejected")}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-500 border border-red-100 hover:bg-red-50 transition-colors disabled:opacity-50"
                       >
-                        <X className="w-3.5 h-3.5" /> Cancel
+                        <X className="w-3.5 h-3.5" /> Reject
                       </button>
                       <button
                         disabled={isUpdating}
-                        onClick={() => updateStatus(appt.id, "confirmed")}
+                        onClick={() => updateStatus(appt.id, "accepted")}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-colors hover:opacity-90 disabled:opacity-50"
                         style={{ background: "var(--color-navy)" }}
                       >
-                        <Check className="w-3.5 h-3.5" /> Confirm
+                        <Check className="w-3.5 h-3.5" /> Accept
                       </button>
                     </div>
                   )}
 
-                  {/* Status badge — confirmed / cancelled */}
+                  {/* Status badge — confirmed / cancelled / completed */}
                   {appt.status !== "pending" && (
                     <div className="flex items-center gap-2 shrink-0">
                       <span
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold capitalize"
                         style={{
-                          background: appt.status === "confirmed" ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.08)",
-                          color: appt.status === "confirmed" ? "#10B981" : "#EF4444",
+                          background: appt.status === "completed"
+                            ? "rgba(99,102,241,0.1)"
+                            : (appt.status === "confirmed" || appt.status === "accepted")
+                            ? "rgba(16,185,129,0.1)"
+                            : "rgba(239,68,68,0.08)",
+                          color: appt.status === "completed"
+                            ? "#6366F1"
+                            : (appt.status === "confirmed" || appt.status === "accepted")
+                            ? "#10B981"
+                            : "#EF4444",
                         }}
                       >
-                        {appt.status === "confirmed" ? <Check className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
-                        {appt.status}
+                        {(appt.status === "confirmed" || appt.status === "accepted" || appt.status === "completed") ? <Check className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
+                        {appt.status === "accepted" ? "Accepted" : appt.status === "rejected" ? "Rejected" : appt.status}
                       </span>
+                      {(appt.status === "accepted" || appt.status === "confirmed") && (
+                        <button
+                          disabled={isUpdating}
+                          onClick={() => updateStatus(appt.id, "completed")}
+                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-white transition-colors hover:opacity-90 disabled:opacity-50"
+                          style={{ background: "var(--color-navy)" }}
+                        >
+                          <Check className="w-3 h-3" /> Complete
+                        </button>
+                      )}
                       <button
                         disabled={isUpdating}
                         onClick={() => updateStatus(appt.id, "pending")}

@@ -40,7 +40,7 @@ export interface DbAppointment {
   time: string;           // "HH:MM"
   durationMinutes: number;
   type: "in-clinic" | "telehealth";
-  status: "pending" | "confirmed" | "cancelled";
+  status: "pending" | "confirmed" | "cancelled" | "accepted" | "rejected" | "completed";
   notes: string;
   createdAt: Date;
   updatedAt: Date;

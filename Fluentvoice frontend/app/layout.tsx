@@ -61,8 +61,14 @@ export default function RootLayout({
             var originalFetch = window.fetch;
             window.fetch = function(input, init) {
               if (typeof input === 'string' && input.startsWith('/api/')) {
-                var isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                var backendUrl = isLocal ? 'http://localhost:5001' : 'https://fluentvoice-backend-blhk.onrender.com';
+                var hostname = window.location.hostname;
+                var isLocal = hostname === 'localhost' || 
+                              hostname === '127.0.0.1' || 
+                              hostname.startsWith('127.') || 
+                              hostname.startsWith('192.168.') || 
+                              hostname.startsWith('10.') || 
+                              hostname.endsWith('.local');
+                var backendUrl = isLocal ? 'http://localhost:5001' : '${process.env.NEXT_PUBLIC_BACKEND_URL || "https://fluentvoice-backend-1.onrender.com"}';
                 input = backendUrl + input;
                 if (!init) init = {};
                 init.credentials = 'include';

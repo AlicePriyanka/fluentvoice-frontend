@@ -20,13 +20,17 @@ const AVATAR_COLORS = ["#6366F1", "#8B5CF6", "#EC4899", "#1B2B5E", "#10B981", "#
 interface DisplayPatient {
   id: string;
   name: string;
+  email: string;
+  joinedDate: string;
   age: number;
   condition: string;
   sessionsCount: number;
   avgFluency: number;
   trend: "improving" | "stable" | "declining";
+  lastSessionDate: string | null;
+  assessmentStatus: string;
+  treatmentPlanStatus: string;
   nextAppointment: string;
-  joinedDate: string;
 }
 
 export default function PatientsPage() {
@@ -44,13 +48,17 @@ export default function PatientsPage() {
           const mapped = data.patients.map((p: any) => ({
             id: p.id,
             name: p.name,
+            email: p.email,
+            joinedDate: p.joinedDate ?? "—",
             age: p.age ?? 0,
             condition: p.condition ?? "Fluency disorder",
             sessionsCount: p.sessionsCount,
             avgFluency: p.avgFluency,
             trend: p.trend,
+            lastSessionDate: p.lastSessionDate,
+            assessmentStatus: p.assessmentStatus ?? "pending",
+            treatmentPlanStatus: p.treatmentPlanStatus ?? "pending",
             nextAppointment: p.nextAppointment ?? "Not scheduled",
-            joinedDate: p.joinedDate ?? "—",
           }));
           // Sort: most sessions first, then alphabetically
           mapped.sort((a: DisplayPatient, b: DisplayPatient) =>
@@ -70,10 +78,15 @@ export default function PatientsPage() {
   }
 
   useEffect(() => {
-    fetchPatients();
+    const timer = setTimeout(() => {
+      fetchPatients();
+    }, 0);
     // Auto-refresh every 20 seconds
     const interval = setInterval(fetchPatients, 20_000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = patients.filter(
@@ -207,10 +220,19 @@ export default function PatientsPage() {
                           {patient.condition}
                         </span>
                       </div>
-                      <div className="flex items-center gap-3 mt-1.5 text-xs text-[#9CA3AF]">
+                      <div className="flex items-center gap-3 mt-1 text-xs text-[#9CA3AF] flex-wrap">
+                        <span>{patient.email}</span>
+                        <span>·</span>
+                        <span>Registered: {patient.joinedDate}</span>
+                      </div>
+                      <div className="flex items-center gap-3 mt-1 text-xs text-[#9CA3AF] flex-wrap">
                         <span>{patient.sessionsCount} session{patient.sessionsCount !== 1 ? "s" : ""}</span>
                         <span>·</span>
-                        <span>Joined {patient.joinedDate}</span>
+                        <span>Latest session: {patient.lastSessionDate ? new Date(patient.lastSessionDate).toLocaleDateString("en-IN") : "None"}</span>
+                        <span>·</span>
+                        <span className="capitalize">Assessment: <strong className="font-semibold">{patient.assessmentStatus}</strong></span>
+                        <span>·</span>
+                        <span className="capitalize">Plan: <strong className="font-semibold">{patient.treatmentPlanStatus}</strong></span>
                         {patient.nextAppointment !== "Not scheduled" && (
                           <>
                             <span>·</span>

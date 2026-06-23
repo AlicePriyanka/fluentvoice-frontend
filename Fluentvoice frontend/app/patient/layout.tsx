@@ -11,13 +11,16 @@ export default function PatientLayout({ children }: { children: React.ReactNode 
   const [displayName, setDisplayName] = useState("Arjun Kumar");
 
   useEffect(() => {
-    try {
-      const user = localStorage.getItem("fv_user");
-      if (user) {
-        const parsed = JSON.parse(user);
-        if (parsed?.name) setDisplayName(parsed.name);
-      }
-    } catch { /* ignore */ }
+    const timer = setTimeout(() => {
+      try {
+        const user = localStorage.getItem("fv_user");
+        if (user) {
+          const parsed = JSON.parse(user);
+          if (parsed?.name) setDisplayName(parsed.name);
+        }
+      } catch { /* ignore */ }
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   // Don't render anything until auth is confirmed — prevents flash of content

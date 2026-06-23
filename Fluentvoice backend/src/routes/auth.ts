@@ -12,21 +12,28 @@ router.post("/register", async (req: Request, res: Response) => {
   try {
     const { name, email, password, role } = req.body;
 
+    console.log(`[Register] Initiated registration request for email: ${email}, role: ${role}`);
+
     if (!name?.trim() || !email?.trim() || !password || !role) {
+      console.warn(`[Register] Bad Request: Missing required fields for email: ${email}`);
       return res.status(400).json({ error: "All fields are required." });
     }
     if (password.length < 8) {
+      console.warn(`[Register] Bad Request: Password too short for email: ${email}`);
       return res.status(400).json({ error: "Password must be at least 8 characters." });
     }
     if (!["patient", "therapist"].includes(role)) {
+      console.warn(`[Register] Bad Request: Invalid role ${role} for email: ${email}`);
       return res.status(400).json({ error: "Invalid role." });
     }
 
     const emailKey = email.toLowerCase().trim();
 
     // Check if user exists
+    console.log(`[Register] Checking database if account with email ${emailKey} already exists...`);
     const existing = db.prepare("SELECT * FROM users WHERE email = ?").get(emailKey) as DbUser | undefined;
     if (existing) {
+      console.warn(`[Register] Conflict: Account with email ${emailKey} already exists.`);
       return res.status(409).json({ error: "An account with this email already exists." });
     }
 
@@ -39,11 +46,18 @@ router.post("/register", async (req: Request, res: Response) => {
     if (role === "patient") {
       const requestedTherapistId = req.body.therapistId?.trim();
       if (requestedTherapistId) {
+        console.log(`[Register] Validating requested therapistId: ${requestedTherapistId} for patient: ${emailKey}`);
         // Validate that the supplied therapistId actually exists and is a therapist
         const found = db.prepare("SELECT _id FROM users WHERE _id = ? AND role = 'therapist'").get(requestedTherapistId) as DbUser | undefined;
-        if (found) therapistId = found._id;
+        if (found) {
+          therapistId = found._id;
+          console.log(`[Register] Requested therapist valid. Patient ${emailKey} assigned to therapist ID: ${therapistId}`);
+        } else {
+          console.warn(`[Register] Requested therapist ID ${requestedTherapistId} not found or is not a therapist. Falling back to auto-assignment.`);
+        }
       }
       if (!therapistId) {
+        console.log(`[Register] Running round-robin auto-assignment for patient: ${emailKey}`);
         // Fallback: assign to therapist with fewest current patients
         const therapist = db.prepare(`
           SELECT _id FROM users
@@ -51,12 +65,18 @@ router.post("/register", async (req: Request, res: Response) => {
           ORDER BY (SELECT COUNT(*) FROM users p WHERE p.therapistId = users._id AND p.role = 'patient') ASC
           LIMIT 1
         `).get() as DbUser | undefined;
-        if (therapist) therapistId = therapist._id;
+        if (therapist) {
+          therapistId = therapist._id;
+          console.log(`[Register] Auto-assigned patient ${emailKey} to therapist ID: ${therapistId} (fewest active patients).`);
+        } else {
+          console.warn(`[Register] WARNING: No therapists found in system to assign to patient ${emailKey}.`);
+        }
       }
     }
 
     const userId = crypto.randomBytes(12).toString("hex");
 
+    console.log(`[Register] Saving new ${role} user to SQLite database. ID: ${userId}, Email: ${emailKey}`);
     db.prepare(`
       INSERT INTO users (_id, email, passwordHash, name, role, therapistId, joinedDate, createdAt)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -70,6 +90,8 @@ router.post("/register", async (req: Request, res: Response) => {
       joinedDate,
       now.toISOString()
     );
+
+    console.log(`[Register] SUCCESS: User registered successfully. ID: ${userId}, Email: ${emailKey}, Assigned Therapist: ${therapistId || 'none'}`);
 
     const token = await signToken({
       sub: userId,
@@ -89,7 +111,7 @@ router.post("/register", async (req: Request, res: Response) => {
     res.cookie("fv_token", token, cookieOptions);
     return res.status(201).json({ user: safeUser });
   } catch (err) {
-    console.error("Register error:", err);
+    console.error(`[Register] ERROR during registration for ${req.body.email}:`, err);
     return res.status(500).json({ error: "Registration failed. Please try again." });
   }
 });

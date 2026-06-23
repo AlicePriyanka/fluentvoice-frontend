@@ -45,6 +45,23 @@ interface PatientData {
   remarks: string;
 }
 
+interface PatientAppointment {
+  id: string;
+  date: string;
+  time: string;
+  type: string;
+  status: string;
+  notes?: string;
+}
+
+interface TreatmentPlanVersion {
+  id?: string;
+  goals: string[];
+  exercises: string[];
+  remarks?: string;
+  updatedAt: string;
+}
+
 interface Stats {
   count: number;
   avgFluency: number;
@@ -65,6 +82,8 @@ function PatientDetailContent() {
   const [patient, setPatient]   = useState<PatientData | null>(null);
   const [stats, setStats]       = useState<Stats | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [appointments, setAppointments] = useState<PatientAppointment[]>([]);
+  const [treatmentPlanHistory, setTreatmentPlanHistory] = useState<TreatmentPlanVersion[]>([]);
   const [loading, setLoading]   = useState(true);
   const [selectedIdx, setSelectedIdx] = useState(0);
 
@@ -84,6 +103,8 @@ function PatientDetailContent() {
         setPatient(data.patient);
         setStats(data.stats);
         setSessions(data.sessions ?? []);
+        setAppointments(data.appointments ?? []);
+        setTreatmentPlanHistory(data.treatmentPlanHistory ?? []);
         // Only set treatment plan fields on initial load so edits aren't lost
         if (isInitial) {
           setGoals(data.patient.goals?.join("\n") ?? "");
@@ -96,10 +117,15 @@ function PatientDetailContent() {
 
   useEffect(() => {
     if (id) {
-      fetchData(true);
+      const timer = setTimeout(() => {
+        fetchData(true);
+      }, 0);
       // Auto-refresh sessions every 20 seconds
       const interval = setInterval(() => fetchData(false), 20_000);
-      return () => clearInterval(interval);
+      return () => {
+        clearTimeout(timer);
+        clearInterval(interval);
+      };
     }
   }, [id]);
 
@@ -476,6 +502,85 @@ function PatientDetailContent() {
             </div>
           ))}
         </div>
+      </motion.div>
+
+      {/* Appointment History */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+        className="p-6 rounded-2xl border"
+        style={{ background: "white", borderColor: "var(--color-border)", boxShadow: "var(--shadow-sm)" }}
+      >
+        <h3 className="font-bold text-[var(--color-navy)] text-sm mb-4">Appointment History</h3>
+        {appointments.length === 0 ? (
+          <p className="text-sm text-[#9CA3AF]">No appointments found for this patient.</p>
+        ) : (
+          <div className="space-y-3">
+            {appointments.map((appt) => {
+              const isConfirmed = appt.status === "confirmed" || appt.status === "accepted" || appt.status === "completed";
+              const isPending = appt.status === "pending";
+              return (
+                <div key={appt.id} className="flex items-center justify-between p-3 rounded-xl border" style={{ borderColor: "var(--color-border)" }}>
+                  <div>
+                    <div className="text-sm font-semibold text-[var(--color-navy)]">{appt.date} · {appt.time}</div>
+                    <div className="text-xs text-[#9CA3AF] capitalize">{appt.type} {appt.notes ? `· Notes: ${appt.notes}` : ""}</div>
+                  </div>
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full capitalize" style={{
+                    background: isConfirmed ? "rgba(16,185,129,0.1)" : isPending ? "rgba(245,158,11,0.08)" : "rgba(239,68,68,0.08)",
+                    color: isConfirmed ? "#10B981" : isPending ? "#F59E0B" : "#EF4444"
+                  }}>
+                    {appt.status === "accepted" ? "Accepted" : appt.status === "rejected" ? "Rejected" : appt.status}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </motion.div>
+
+      {/* Treatment Plan Version History */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="p-6 rounded-2xl border"
+        style={{ background: "white", borderColor: "var(--color-border)", boxShadow: "var(--shadow-sm)" }}
+      >
+        <h3 className="font-bold text-[var(--color-navy)] text-sm mb-4">Treatment Plan History (Versions)</h3>
+        {treatmentPlanHistory.length === 0 ? (
+          <p className="text-sm text-[#9CA3AF]">No plan edits recorded yet.</p>
+        ) : (
+          <div className="space-y-4">
+            {treatmentPlanHistory.map((ver, idx) => (
+              <div key={ver.id || idx} className="p-4 rounded-xl border space-y-2 bg-[#FAFBFF]" style={{ borderColor: "var(--color-border)" }}>
+                <div className="flex justify-between text-xs text-[#9CA3AF] font-bold">
+                  <span>Version #{treatmentPlanHistory.length - idx}</span>
+                  <span>{new Date(ver.updatedAt).toLocaleString("en-IN")}</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="font-bold text-[var(--color-navy)] uppercase tracking-wider block mb-1">Goals:</span>
+                    <ul className="list-disc pl-4 space-y-0.5">
+                      {ver.goals.map((g: string, i: number) => <li key={i}>{g}</li>)}
+                    </ul>
+                  </div>
+                  <div>
+                    <span className="font-bold text-[var(--color-navy)] uppercase tracking-wider block mb-1">Exercises:</span>
+                    <ul className="list-disc pl-4 space-y-0.5">
+                      {ver.exercises.map((e: string, i: number) => <li key={i}>{e}</li>)}
+                    </ul>
+                  </div>
+                </div>
+                {ver.remarks && (
+                  <div className="text-xs pt-1 border-t text-[#374151]" style={{ borderColor: "var(--color-border)" }}>
+                    <strong>Remarks:</strong> {ver.remarks}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </motion.div>
     </div>
   );
