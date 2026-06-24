@@ -31,7 +31,9 @@ router.post("/register", async (req: Request, res: Response) => {
 
     // Check if user exists
     console.log(`[Register] Checking database if account with email ${emailKey} already exists...`);
-    const existing = db.prepare("SELECT * FROM users WHERE email = ?").get(emailKey) as DbUser | undefined;
+    const existingRes = await db.query("SELECT * FROM users WHERE email = $1", [emailKey]);
+    const existing = existingRes.rows[0] as DbUser | undefined;
+    
     if (existing) {
       console.warn(`[Register] Conflict: Account with email ${emailKey} already exists.`);
       return res.status(409).json({ error: "An account with this email already exists." });
@@ -47,8 +49,8 @@ router.post("/register", async (req: Request, res: Response) => {
       const requestedTherapistId = req.body.therapistId?.trim();
       if (requestedTherapistId) {
         console.log(`[Register] Validating requested therapistId: ${requestedTherapistId} for patient: ${emailKey}`);
-        // Validate that the supplied therapistId actually exists and is a therapist
-        const found = db.prepare("SELECT _id FROM users WHERE _id = ? AND role = 'therapist'").get(requestedTherapistId) as DbUser | undefined;
+        const foundRes = await db.query("SELECT _id FROM users WHERE _id = $1 AND role = 'therapist'", [requestedTherapistId]);
+        const found = foundRes.rows[0] as DbUser | undefined;
         if (found) {
           therapistId = found._id;
           console.log(`[Register] Requested therapist valid. Patient ${emailKey} assigned to therapist ID: ${therapistId}`);
@@ -58,13 +60,13 @@ router.post("/register", async (req: Request, res: Response) => {
       }
       if (!therapistId) {
         console.log(`[Register] Running round-robin auto-assignment for patient: ${emailKey}`);
-        // Fallback: assign to therapist with fewest current patients
-        const therapist = db.prepare(`
+        const therapistRes = await db.query(`
           SELECT _id FROM users
           WHERE role = 'therapist'
           ORDER BY (SELECT COUNT(*) FROM users p WHERE p.therapistId = users._id AND p.role = 'patient') ASC
           LIMIT 1
-        `).get() as DbUser | undefined;
+        `);
+        const therapist = therapistRes.rows[0] as DbUser | undefined;
         if (therapist) {
           therapistId = therapist._id;
           console.log(`[Register] Auto-assigned patient ${emailKey} to therapist ID: ${therapistId} (fewest active patients).`);
@@ -76,11 +78,11 @@ router.post("/register", async (req: Request, res: Response) => {
 
     const userId = crypto.randomBytes(12).toString("hex");
 
-    console.log(`[Register] Saving new ${role} user to SQLite database. ID: ${userId}, Email: ${emailKey}`);
-    db.prepare(`
+    console.log(`[Register] Saving new ${role} user to Postgres database. ID: ${userId}, Email: ${emailKey}`);
+    await db.query(`
       INSERT INTO users (_id, email, passwordHash, name, role, therapistId, joinedDate, createdAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `, [
       userId,
       emailKey,
       passwordHash,
@@ -89,7 +91,7 @@ router.post("/register", async (req: Request, res: Response) => {
       therapistId || null,
       joinedDate,
       now.toISOString()
-    );
+    ]);
 
     console.log(`[Register] SUCCESS: User registered successfully. ID: ${userId}, Email: ${emailKey}, Assigned Therapist: ${therapistId || 'none'}`);
 
@@ -126,7 +128,8 @@ router.post("/login", async (req: Request, res: Response) => {
     }
 
     const emailKey = email.toLowerCase().trim();
-    const user = db.prepare("SELECT * FROM users WHERE email = ?").get(emailKey) as DbUser | undefined;
+    const userRes = await db.query("SELECT * FROM users WHERE email = $1", [emailKey]);
+    const user = userRes.rows[0] as DbUser | undefined;
 
     if (!user) {
       // Constant-time comparison to prevent user enumeration
@@ -134,7 +137,7 @@ router.post("/login", async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid email or password." });
     }
 
-    const valid = await bcrypt.compare(password, user.passwordHash);
+    const valid = await bcrypt.compare(password, user.passwordHash || (user as any).passwordhash);
     if (!valid) {
       return res.status(401).json({ error: "Invalid email or password." });
     }
@@ -153,8 +156,8 @@ router.post("/login", async (req: Request, res: Response) => {
       email: user.email,
       name: user.name,
       role: user.role,
-      therapistId: user.therapistId || undefined,
-      joinedDate: user.joinedDate,
+      therapistId: user.therapistId || (user as any).therapistid || undefined,
+      joinedDate: user.joinedDate || (user as any).joineddate,
     };
 
     res.cookie("fv_token", token, cookieOptions);
@@ -179,19 +182,20 @@ router.get("/me", async (req: Request, res: Response) => {
       return res.status(401).json({ user: null });
     }
 
-    const user = db.prepare("SELECT * FROM users WHERE _id = ?").get(jwt.sub) as DbUser | undefined;
+    const userRes = await db.query("SELECT * FROM users WHERE _id = $1", [jwt.sub]);
+    const user = userRes.rows[0] as DbUser | undefined;
 
     if (!user) {
       return res.status(401).json({ user: null });
     }
 
     const safeUser: SafeUser = {
-      id: user._id!,
+      id: user._id || (user as any).id || (user as any)._id,
       email: user.email,
       name: user.name,
       role: user.role,
-      therapistId: user.therapistId || undefined,
-      joinedDate: user.joinedDate,
+      therapistId: user.therapistId || (user as any).therapistid || undefined,
+      joinedDate: user.joinedDate || (user as any).joineddate,
     };
 
     return res.json({ user: safeUser });
@@ -214,14 +218,15 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
     }
 
     const emailKey = email.toLowerCase().trim();
-    const user = db.prepare("SELECT * FROM users WHERE email = ?").get(emailKey) as DbUser | undefined;
+    const userRes = await db.query("SELECT * FROM users WHERE email = $1", [emailKey]);
+    const user = userRes.rows[0] as DbUser | undefined;
 
     if (!user) {
       return res.status(404).json({ error: "No account found with this email." });
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 12);
-    db.prepare("UPDATE users SET passwordHash = ? WHERE _id = ?").run(passwordHash, user._id);
+    await db.query("UPDATE users SET passwordHash = $1 WHERE _id = $2", [passwordHash, user._id]);
 
     return res.json({ ok: true });
   } catch (err) {
@@ -231,12 +236,12 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
 });
 
 // GET /api/auth/therapists — public, used by registration form
-router.get("/therapists", (_req: Request, res: Response) => {
+router.get("/therapists", async (_req: Request, res: Response) => {
   try {
-    const therapists = db.prepare(
+    const result = await db.query(
       "SELECT _id as id, name FROM users WHERE role = 'therapist' ORDER BY name ASC"
-    ).all();
-    return res.json({ therapists });
+    );
+    return res.json({ therapists: result.rows });
   } catch (err) {
     console.error("GET /api/auth/therapists error:", err);
     return res.status(500).json({ error: "Failed to fetch therapists." });

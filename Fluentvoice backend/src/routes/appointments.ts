@@ -16,26 +16,30 @@ router.get("/", async (req: Request, res: Response) => {
 
     console.log(`[Appointments] GET list initiated by User: ${jwt.sub} (role: ${jwt.role})`);
 
-    // Fetch appointments from SQLite based on role
-    const appts = jwt.role === "patient"
-      ? db.prepare("SELECT * FROM appointments WHERE patientId = ? ORDER BY date ASC, time ASC").all(jwt.sub) as any[]
-      : db.prepare("SELECT * FROM appointments ORDER BY date ASC, time ASC").all() as any[];
+    let appts: any[] = [];
+    if (jwt.role === "patient") {
+      const result = await db.query("SELECT * FROM appointments WHERE patientId = $1 ORDER BY date ASC, time ASC", [jwt.sub]);
+      appts = result.rows;
+    } else {
+      const result = await db.query("SELECT * FROM appointments ORDER BY date ASC, time ASC");
+      appts = result.rows;
+    }
 
     console.log(`[Appointments] Query successful. Retrieved ${appts.length} appointments for ${jwt.role} ${jwt.sub}`);
 
     return res.json({
       appointments: appts.map((a) => ({
         id: a._id,
-        patientId: a.patientId,
-        therapistId: a.therapistId,
-        patientName: a.patientName,
+        patientId: a.patientId ?? a.patientid,
+        therapistId: a.therapistId ?? a.therapistid,
+        patientName: a.patientName ?? a.patientname,
         date: a.date,
         time: a.time,
-        durationMinutes: a.durationMinutes,
+        durationMinutes: a.durationMinutes ?? a.durationminutes,
         type: a.type,
         status: a.status,
         notes: a.notes,
-        createdAt: a.createdAt,
+        createdAt: a.createdAt ?? a.createdat,
       })),
     });
   } catch (err) {
@@ -65,21 +69,24 @@ router.post("/", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Date and time are required." });
     }
 
-    // Find this patient's therapist in SQLite
+    // Find this patient's therapist in Postgres
     console.log(`[Appointments] Checking assigned therapist for patient: ${jwt.sub}`);
-    const user = db.prepare("SELECT therapistId FROM users WHERE _id = ?").get(jwt.sub) as any;
-    let targetTherapistId = user?.therapistId;
+    const userRes = await db.query("SELECT therapistId FROM users WHERE _id = $1", [jwt.sub]);
+    const user = userRes.rows[0];
+    let targetTherapistId = user?.therapistId ?? user?.therapistid;
+
     if (!targetTherapistId) {
       console.log(`[Appointments] Dynamically assigning therapist for patient: ${jwt.sub}`);
-      const therapist = db.prepare(`
+      const therapistRes = await db.query(`
         SELECT _id FROM users
         WHERE role = 'therapist'
         ORDER BY (SELECT COUNT(*) FROM users p WHERE p.therapistId = users._id AND p.role = 'patient') ASC
         LIMIT 1
-      `).get() as any;
+      `);
+      const therapist = therapistRes.rows[0];
       if (therapist) {
         targetTherapistId = therapist._id;
-        db.prepare("UPDATE users SET therapistId = ? WHERE _id = ?").run(targetTherapistId, jwt.sub);
+        await db.query("UPDATE users SET therapistId = $1 WHERE _id = $2", [targetTherapistId, jwt.sub]);
         console.log(`[Appointments] Dynamically assigned patient ${jwt.sub} to therapist ID: ${targetTherapistId}`);
       } else {
         console.warn(`[Appointments] Booking Failed: No therapists registered in system.`);
@@ -91,10 +98,10 @@ router.post("/", async (req: Request, res: Response) => {
     const nowStr = new Date().toISOString();
 
     console.log(`[Appointments] Persisting new appointment to database. Appt ID: ${apptId}, Therapist ID: ${targetTherapistId}`);
-    db.prepare(`
+    await db.query(`
       INSERT INTO appointments (_id, patientId, therapistId, patientName, date, time, durationMinutes, type, status, notes, createdAt, updatedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+    `, [
       apptId,
       jwt.sub,
       targetTherapistId,
@@ -107,7 +114,7 @@ router.post("/", async (req: Request, res: Response) => {
       notes ?? "",
       nowStr,
       nowStr
-    );
+    ]);
 
     console.log(`[Appointments] SUCCESS: Appointment ${apptId} created successfully in status: pending`);
     return res.status(201).json({ id: apptId });
@@ -136,13 +143,13 @@ router.put("/:id", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid status." });
     }
 
-    const result = db.prepare(`
+    const result = await db.query(`
       UPDATE appointments
-      SET status = ?, updatedAt = ?
-      WHERE _id = ?
-    `).run(status, new Date().toISOString(), id);
+      SET status = $1, updatedAt = $2
+      WHERE _id = $3
+    `, [status, new Date().toISOString(), id]);
 
-    if (result.changes === 0) {
+    if (result.rowCount === 0) {
       console.warn(`[Appointments] Not Found: Update failed because appointment ID ${id} was not found.`);
       return res.status(404).json({ error: "Appointment not found." });
     }
@@ -167,9 +174,9 @@ router.delete("/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
     console.log(`[Appointments] DELETE request received for ID: ${id} by User: ${jwt.sub}`);
 
-    const result = db.prepare("DELETE FROM appointments WHERE _id = ?").run(id);
+    const result = await db.query("DELETE FROM appointments WHERE _id = $1", [id]);
     
-    console.log(`[Appointments] SUCCESS: Deleted appointment ${id}. Rows affected: ${result.changes}`);
+    console.log(`[Appointments] SUCCESS: Deleted appointment ${id}. Rows affected: ${result.rowCount}`);
     return res.json({ ok: true });
   } catch (err) {
     console.error(`[Appointments] Error deleting appointment ${req.params.id}:`, err);

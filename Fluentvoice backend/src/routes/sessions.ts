@@ -13,10 +13,12 @@ router.get("/", async (req: Request, res: Response) => {
 
     console.log(`[Sessions] Retrieval requested by user: ${jwt.sub} (${jwt.role})`);
 
-    // Query sessions from SQLite sorted by createdAt descending
-    const results = db.prepare(
-      "SELECT * FROM sessions WHERE userId = ? ORDER BY createdAt DESC"
-    ).all(jwt.sub) as any[];
+    // Query sessions from Postgres sorted by createdAt descending
+    const resultsRes = await db.query(
+      "SELECT * FROM sessions WHERE userId = $1 ORDER BY createdAt DESC",
+      [jwt.sub]
+    );
+    const results = resultsRes.rows;
 
     console.log(`[Sessions] SUCCESS: Retrieved ${results.length} sessions for user: ${jwt.sub}`);
 
@@ -38,7 +40,7 @@ router.get("/", async (req: Request, res: Response) => {
 
       return {
         id: s._id,
-        date: new Date(s.createdAt).toLocaleString("en-IN", {
+        date: new Date(s.createdAt ?? s.createdat).toLocaleString("en-IN", {
           month: "short",
           day: "numeric",
           year: "numeric",
@@ -46,7 +48,7 @@ router.get("/", async (req: Request, res: Response) => {
           minute: "2-digit",
           timeZone: "Asia/Kolkata",
         }),
-        audioUrl: s.audioUrl ?? null,
+        audioUrl: s.audiourl ?? s.audioUrl ?? null,
         report: {
           fluency_score: s.fluency_score,
           severity: s.severity,
@@ -92,13 +94,16 @@ router.post("/", async (req: Request, res: Response) => {
 
     const sessionId = crypto.randomBytes(12).toString("hex");
 
-    db.prepare(`
+    // In postgres, fluency_score is an INTEGER, ensure it's rounded
+    const parsedFluencyScore = Math.round(Number(fluency_score));
+
+    await db.query(`
       INSERT INTO sessions (_id, userId, fluency_score, severity, speech_rate, transcript, disfluencies, pauses, timeline, audioUrl, createdAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+    `, [
       sessionId,
       jwt.sub,
-      fluency_score,
+      parsedFluencyScore,
       severity ?? "moderate",
       speech_rate ?? 0,
       transcript ?? "",
@@ -107,7 +112,7 @@ router.post("/", async (req: Request, res: Response) => {
       JSON.stringify(timeline ?? []),
       audioUrl ?? null,
       new Date().toISOString()
-    );
+    ]);
 
     console.log(`[Sessions] SUCCESS: Saved session ${sessionId} for user: ${jwt.sub}`);
     return res.status(201).json({ id: sessionId });

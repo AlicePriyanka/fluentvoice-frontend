@@ -1,12 +1,12 @@
-import Database from "better-sqlite3";
-import path from "path";
+import { Pool } from "pg";
+import dotenv from "dotenv";
 
-// Use DATABASE_PATH env var if set (e.g. pointing to a Render Persistent Disk at /data/fluentvoice.db)
-// otherwise fall back to the local project directory
-const dbPath = process.env.DATABASE_PATH ?? path.resolve(process.cwd(), "fluentvoice.db");
-const db = new Database(dbPath);
+dotenv.config();
 
-// Enable foreign key support
-db.pragma("foreign_keys = ON");
+// Use DATABASE_URL env var
+const db = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL?.includes("localhost") ? false : { rejectUnauthorized: false }
+});
 
 export default db;
