@@ -12,7 +12,7 @@ import therapistRouter from "./routes/therapist";
 import treatmentRouter from "./routes/treatment";
 import analyzeRouter from "./routes/analyze";
 import uploadAudioRouter from "./routes/uploadAudio";
-// 
+
 const app = express();
 const port = process.env.PORT || 5000;
 
