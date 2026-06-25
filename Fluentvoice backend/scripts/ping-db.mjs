@@ -1,6 +1,9 @@
 import pg from "pg";
 
-const url = "postgresql://fluentvoice_user:7UVKqYuE971VmMVsF0fMjcqY8FElYXQf@dpg-d8shicv7f7vs73cu7ql0-a.oregon-postgres.render.com/fluentvoice?ssl=true";
+import dotenv from "dotenv";
+dotenv.config();
+
+const url = process.env.DATABASE_URL;
 
 const pool = new pg.Pool({ connectionString: url });
 

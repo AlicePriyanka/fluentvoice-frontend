@@ -18,7 +18,7 @@ import kotlin.random.Random
 object FluentVoiceRepository {
 
     private const val TAG = "FluentVoiceRepository"
-    private const val BASE_URL = "https://fluentvoice-backend-blhk.onrender.com"
+    private const val BASE_URL = "https://fluentvoice-backend-1.onrender.com"
     private const val ANALYZE_URL = "$BASE_URL/api/analyze"
 
     // Persisted Cookie

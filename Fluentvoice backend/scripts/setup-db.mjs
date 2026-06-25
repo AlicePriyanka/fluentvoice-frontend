@@ -15,7 +15,7 @@ const db = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.DATABASE_URL?.includes("localhost") ? false : { rejectUnauthorized: false }
 });
-
+// 
 async function setup() {
   const client = await db.connect();
   try {
